@@ -19,7 +19,7 @@
  */
 import type { RequestHandler } from 'express';
 import { ZodError, type ZodTypeAny } from 'zod';
-import { ValidationError, type ErrorDetail } from '../utils/AppError';
+import { BadRequestError, ValidationError, type ErrorDetail } from '../utils/AppError';
 
 export interface RequestSchemas {
   body?: ZodTypeAny;
@@ -59,7 +59,17 @@ export function validate(schemas: RequestSchemas): RequestHandler {
     }
 
     if (details.length > 0) {
-      next(new ValidationError('Request validation failed.', details));
+      // A bad path parameter means the URL itself is wrong — /customers/abc is
+      // not a resource address at all — so it is a 400. A well-formed request
+      // whose body or query fails a rule is a 422. This split is the contract
+      // published in docs/API_PLAN.md section 1.
+      const isPathProblem = details.some((detail) => detail.field.startsWith('params'));
+
+      next(
+        isPathProblem
+          ? new BadRequestError('Invalid URL parameter.', details)
+          : new ValidationError('Request validation failed.', details),
+      );
       return;
     }
 

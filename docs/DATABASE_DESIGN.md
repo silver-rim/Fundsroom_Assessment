@@ -96,7 +96,7 @@ Every field required by the case study, plus provenance and soft deletion.
 | --- | --- | --- | --- |
 | `id` | `BIGSERIAL` | PK | |
 | `name` | `TEXT` | NOT NULL, length 2–120 | Contact person / customer name |
-| `mobile` | `TEXT` | NOT NULL, **UNIQUE**, CHECK `~ '^[0-9]{10,15}$'` | Digits only; the practical business key (assumption A6) |
+| `mobile` | `TEXT` | NOT NULL, CHECK `~ '^[0-9]{10,15}$'`, **UNIQUE among live rows** | Digits only; the practical business key (assumption A6). See the note below on why the uniqueness is partial. |
 | `email` | `TEXT` | NOT NULL, CHECK simple email pattern | Not unique — a business may share one mailbox |
 | `business_name` | `TEXT` | NOT NULL, length 2–150 | |
 | `gst_number` | `TEXT` | NULL, CHECK 15-char GSTIN pattern when present | **Optional**, per the brief |
@@ -111,6 +111,22 @@ Every field required by the case study, plus provenance and soft deletion.
 
 GSTIN pattern used: `^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$` — format validation
 only; there is no checksum or government lookup.
+
+**Why mobile uniqueness is partial (revised in Phase 3, migration `002`).** The original design used
+a plain `UNIQUE (mobile)` constraint. Combined with soft deletion that was wrong: the deleted row
+survives and keeps holding the number, so a mobile could never be registered again — even though the
+application treats that customer as gone. Worse, the service layer's duplicate check *did* ignore
+deleted rows, so the two disagreed and the database rejected an insert the service had approved.
+The constraint is now a partial unique index:
+
+```sql
+CREATE UNIQUE INDEX uq_customers_mobile_active ON customers (mobile) WHERE deleted_at IS NULL;
+```
+
+"Unique among customers that still exist" is what the business rule actually means, and it now
+matches `customerRepository.mobileExists` exactly. (A partial index cannot be expressed as a `UNIQUE`
+*constraint* — constraints take no `WHERE` clause — so this is a unique *index*; enforcement is
+identical.)
 
 ---
 

@@ -3,10 +3,11 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 1 — Scaffolding & Database Foundation.**
-> The backend, frontend, schema, migration runner and seed data exist and run. Authentication
-> arrives in Phase 2 and the business modules in Phases 3–5. The full submission README
-> (features, credentials, deployment, limitations) is produced in Phase 10.
+> **Status: Phase 3 — Customer CRM module.**
+> Working today: JWT login with four roles, role-based authorization, and the full customer CRM
+> (search, filters, pagination, detail page, follow-up notes). Products and inventory arrive in
+> Phase 4, sales challans in Phase 5. The full submission README (features, credentials,
+> deployment, limitations) is produced in Phase 10.
 
 ---
 
@@ -77,7 +78,7 @@ mini-erp-crm/
 
 ```bash
 git clone https://github.com/<your-username>/Fundsroom_Assessment.git
-cd mini-erp-crm
+cd Fundsroom_Assessment
 
 cd backend  && npm install && cd ..
 cd frontend && npm install && cd ..
@@ -233,8 +234,9 @@ How they are managed:
 | [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) | Every table, column, key, constraint and index, plus the reference DDL and the seed-data plan |
 | [docs/API_PLAN.md](docs/API_PLAN.md) | All 26 planned REST endpoints, conventions, response envelope, error codes, validation rules |
 | [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) | JWT design, login flow, password storage, **permission matrix**, security decisions and limitations, 21 test results |
+| [docs/CRM_MODULE.md](docs/CRM_MODULE.md) | Customer workflow, data model, endpoints, validation, role access, frontend behaviour, 31 test results |
 
-Documents added in later phases: `CRM_MODULE.md`, `INVENTORY_MODULE.md`,
+Documents added in later phases: `INVENTORY_MODULE.md`,
 `SALES_CHALLAN_MODULE.md`, `FRONTEND_GUIDE.md`, `TESTING.md`, `API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
 
 ---
@@ -246,7 +248,7 @@ Documents added in later phases: `CRM_MODULE.md`, `INVENTORY_MODULE.md`,
 | 0 | Analysis, architecture, database design, API plan | ✅ Complete |
 | 1 | Backend + frontend scaffolding, migrations, seed data | ✅ Complete |
 | 2 | Authentication and role-based access | ✅ Complete |
-| 3 | Customer CRM module | ⬜ |
+| 3 | Customer CRM module | ✅ Complete |
 | 4 | Products, inventory and stock movements | ⬜ |
 | 5 | Sales challans with transactional stock deduction | ⬜ |
 | 6 | Dashboard and complete frontend UX | ⬜ |

@@ -41,7 +41,8 @@ const UNIQUE_CONSTRAINT_ERRORS: Record<string, { code: ErrorCode; message: strin
     code: ERROR_CODES.DUPLICATE_EMAIL,
     message: 'A user with this email address already exists.',
   },
-  customers_mobile_key: {
+  // Partial unique index over live rows only — see migration 002.
+  uq_customers_mobile_active: {
     code: ERROR_CODES.DUPLICATE_MOBILE,
     message: 'A customer with this mobile number already exists.',
   },

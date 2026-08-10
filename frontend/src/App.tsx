@@ -22,6 +22,9 @@ import HomePage from './pages/Home/HomePage';
 import UsersPage from './pages/Users/UsersPage';
 import ForbiddenPage from './pages/Forbidden/ForbiddenPage';
 import SystemStatusPage from './pages/SystemStatus/SystemStatusPage';
+import CustomersListPage from './pages/Customers/CustomersListPage';
+import CustomerDetailPage from './pages/Customers/CustomerDetailPage';
+import CustomerFormPage from './pages/Customers/CustomerFormPage';
 
 export default function App(): JSX.Element {
   return (
@@ -33,6 +36,16 @@ export default function App(): JSX.Element {
           <Route path="/" element={<HomePage />} />
           <Route path="/status" element={<SystemStatusPage />} />
           <Route path="/forbidden" element={<ForbiddenPage />} />
+
+          {/* Customers — every role may read; the write screens are guarded
+              below and the API enforces the same rules independently. */}
+          <Route path="/customers" element={<CustomersListPage />} />
+          <Route path="/customers/:id" element={<CustomerDetailPage />} />
+
+          <Route element={<RoleRoute allow={['ADMIN', 'SALES']} />}>
+            <Route path="/customers/new" element={<CustomerFormPage />} />
+            <Route path="/customers/:id/edit" element={<CustomerFormPage />} />
+          </Route>
 
           <Route element={<RoleRoute allow={['ADMIN']} />}>
             <Route path="/users" element={<UsersPage />} />

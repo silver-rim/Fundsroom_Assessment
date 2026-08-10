@@ -6,9 +6,23 @@
  * client so a service can run several repository calls inside one transaction —
  * which is exactly what the sales-challan confirmation flow needs.
  */
-import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
+import { Pool, types, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { env } from './env';
 import { logger } from '../utils/logger';
+
+/**
+ * Return PostgreSQL `DATE` columns as plain 'YYYY-MM-DD' strings.
+ *
+ * By default `pg` parses DATE into a JS Date at LOCAL midnight. Serialising that
+ * to UTC shifts the day for any positive timezone offset — in IST (+05:30) the
+ * stored date 2026-08-14 would leave the API as "2026-08-13T18:30:00Z" and the
+ * user would see the follow-up land a day early. A calendar date has no time
+ * and no timezone, so it is carried as text end to end.
+ *
+ * OID 1082 = DATE. TIMESTAMPTZ (1184) is left alone: it IS an instant, and the
+ * default Date parsing is correct for it.
+ */
+types.setTypeParser(1082, (value: string) => value);
 
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,

@@ -1,0 +1,26 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.pageLabel {
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .bar {
+    justify-content: center;
+  }
+}
