@@ -1,0 +1,122 @@
+/**
+ * Design tokens.
+ *
+ * Every colour, space, radius, shadow and type size used anywhere in the app is
+ * declared here as a CSS custom property. Components reference the tokens and
+ * never hard-code a raw value, so the whole portal can be restyled from one
+ * file and stays visually consistent as screens are added phase by phase.
+ *
+ * The palette is a restrained blue-grey admin scheme: neutral surfaces, one
+ * accent colour, and four semantic status colours that map to the status badges
+ * used by customers, products and challans.
+ */
+
+:root {
+  /* ---- Neutrals -------------------------------------------------------- */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* ---- Brand / accent -------------------------------------------------- */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+
+  /* ---- Semantic status ------------------------------------------------- */
+  --color-success-50: #ecfdf5;
+  --color-success-200: #a7f3d0;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-200: #fde68a;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+
+  --color-danger-50: #fef2f2;
+  --color-danger-200: #fecaca;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+
+  --color-info-50: #eff6ff;
+  --color-info-200: #bfdbfe;
+  --color-info-600: #2563eb;
+
+  /* ---- Surfaces & text ------------------------------------------------- */
+  --color-bg: var(--color-neutral-100);
+  --color-surface: #ffffff;
+  --color-surface-muted: var(--color-neutral-50);
+  --color-border: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+
+  --color-text: var(--color-neutral-800);
+  --color-text-muted: var(--color-neutral-500);
+  --color-text-inverse: #ffffff;
+
+  /* ---- Typography ------------------------------------------------------ */
+  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Cascadia Mono', 'SF Mono', 'Fira Code', Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem; /* admin UIs read better a notch below 16px */
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.55;
+
+  /* ---- Spacing scale (4px base) ---------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* ---- Radii & shadows ------------------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 2px 8px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.12);
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --sidebar-width: 232px;
+  --topbar-height: 56px;
+  --content-max-width: 1360px;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --transition-fast: 120ms ease;
+  --transition-base: 180ms ease;
+}
+
+/* Respect a user's reduced-motion preference across the whole app. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+  }
+}

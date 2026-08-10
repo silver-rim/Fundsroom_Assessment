@@ -73,16 +73,18 @@ Employee accounts. Seeded, not self-registered (assumption A7).
 | --- | --- | --- | --- |
 | `id` | `BIGSERIAL` | PK | |
 | `name` | `TEXT` | NOT NULL, length 2–120 | Display name |
-| `email` | `CITEXT`¹ | NOT NULL, **UNIQUE** | Login identifier, case-insensitive |
+| `email` | `TEXT`¹ | NOT NULL, **UNIQUE on `lower(email)`** | Login identifier, case-insensitive |
 | `password_hash` | `TEXT` | NOT NULL | bcrypt, cost 10. Never selected into a response |
 | `role` | `TEXT` | NOT NULL, CHECK IN (`ADMIN`,`SALES`,`WAREHOUSE`,`ACCOUNTS`) | |
 | `is_active` | `BOOLEAN` | NOT NULL DEFAULT `true` | Inactive users cannot log in |
 | `created_at` / `updated_at` | `TIMESTAMPTZ` | NOT NULL DEFAULT `now()` | |
 
-¹ `CITEXT` (from the `citext` extension) gives case-insensitive uniqueness so `Admin@x.com` and
-`admin@x.com` cannot both exist. If the hosting provider does not allow the extension, the fallback
-is `TEXT` plus `CREATE UNIQUE INDEX ON users (lower(email))`; both are in the migration as a guarded
-branch.
+¹ Case-insensitive uniqueness (so `Admin@x.com` and `admin@x.com` cannot both exist) comes from
+`CREATE UNIQUE INDEX uq_users_email_lower ON users (lower(email))`, not from the `citext` extension.
+**Revised in Phase 1:** `CREATE EXTENSION citext` needs privileges that not every managed provider
+grants on a free tier, and a failed extension install would break the very first migration. A
+functional unique index needs no extension, works identically on a laptop and on Neon/Render/Supabase,
+and the service layer lower-cases emails before storing them anyway.
 
 ---
 
@@ -359,8 +361,6 @@ Rules enforced in the **service** layer (they need multi-row reasoning the datab
 Implemented as `backend/src/db/migrations/001_init.sql` in Phase 1.
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS citext;
-
 CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS $$
 BEGIN NEW.updated_at = now(); RETURN NEW; END;
 $$ LANGUAGE plpgsql;
@@ -369,13 +369,14 @@ $$ LANGUAGE plpgsql;
 CREATE TABLE users (
   id            BIGSERIAL PRIMARY KEY,
   name          TEXT        NOT NULL CHECK (length(btrim(name)) BETWEEN 2 AND 120),
-  email         CITEXT      NOT NULL UNIQUE,
+  email         TEXT        NOT NULL CHECK (email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[a-z]{2,}$'),
   password_hash TEXT        NOT NULL,
   role          TEXT        NOT NULL CHECK (role IN ('ADMIN','SALES','WAREHOUSE','ACCOUNTS')),
   is_active     BOOLEAN     NOT NULL DEFAULT true,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+CREATE UNIQUE INDEX uq_users_email_lower ON users (lower(email));
 CREATE TRIGGER trg_users_updated BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
@@ -384,7 +385,7 @@ CREATE TABLE customers (
   id             BIGSERIAL PRIMARY KEY,
   name           TEXT        NOT NULL CHECK (length(btrim(name)) BETWEEN 2 AND 120),
   mobile         TEXT        NOT NULL UNIQUE CHECK (mobile ~ '^[0-9]{10,15}$'),
-  email          TEXT        NOT NULL CHECK (email ~* '^[^@\s]+@[^@\s]+\.[a-z]{2,}$'),
+  email          TEXT        NOT NULL CHECK (email ~* '^[^@[:space:]]+@[^@[:space:]]+\.[a-z]{2,}$'),
   business_name  TEXT        NOT NULL CHECK (length(btrim(business_name)) BETWEEN 2 AND 150),
   gst_number     TEXT        NULL CHECK (
                    gst_number IS NULL OR
@@ -508,14 +509,12 @@ CREATE TABLE sales_challan_items (
   CONSTRAINT uq_challan_product UNIQUE (challan_id, product_id)
 );
 CREATE INDEX idx_challan_items_challan ON sales_challan_items (challan_id);
-
--- bookkeeping ---------------------------------------------------------------
-CREATE TABLE schema_migrations (
-  id         SERIAL PRIMARY KEY,
-  filename   TEXT NOT NULL UNIQUE,
-  applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
 ```
+
+`schema_migrations` is **not** part of this file. `migrate.ts` creates it with
+`CREATE TABLE IF NOT EXISTS` before it applies anything, because the runner must be able to read the
+applied-migrations list on a completely empty database — including before `001_init.sql` has ever
+run.
 
 ---
 
