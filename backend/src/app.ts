@@ -16,6 +16,7 @@ import { logger } from './utils/logger';
 import apiRoutes from './routes';
 import { notFound } from './middleware/notFound';
 import { errorHandler } from './middleware/errorHandler';
+import { ForbiddenError } from './utils/AppError';
 
 export function createApp(): Application {
   const app = express();
@@ -37,7 +38,10 @@ export function createApp(): Application {
           return;
         }
         logger.warn('Blocked a cross-origin request', { origin });
-        callback(new Error('Origin not allowed by CORS policy'));
+        // Must be an AppError, not a bare Error: the central handler treats an
+        // unrecognised Error as a bug and answers 500. A rejected origin is the
+        // policy working, so it has to surface as 403.
+        callback(new ForbiddenError('This origin is not allowed by the CORS policy.'));
       },
       credentials: false,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
