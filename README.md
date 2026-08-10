@@ -25,10 +25,10 @@ Documents added in later phases: `AUTHENTICATION.md`, `CRM_MODULE.md`, `INVENTOR
 
 ## Technology stack
 
-**Backend** Node.js · TypeScript · Express.js · PostgreSQL (`pg`, hand-written SQL) · Zod · JWT · bcrypt
-**Frontend** React 18 · TypeScript · Vite · React Router · axios · plain CSS with design tokens
-**Database** PostgreSQL 16
-**Deployment** Vercel (frontend) · Render (backend) · Neon (PostgreSQL) — all free tiers
+**Backend** Node.js · TypeScript · Express.js · PostgreSQL (`pg`, hand-written SQL) · Zod · JWT · bcrypt  
+**Frontend** React 18 · TypeScript · Vite · React Router · axios · plain CSS with design tokens  
+**Database** PostgreSQL 16  
+**Deployment** Vercel (frontend) · Render (backend) · Neon (PostgreSQL) — all free tiers  
 
 ---
 
