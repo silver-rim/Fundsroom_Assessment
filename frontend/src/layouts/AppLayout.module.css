@@ -1,0 +1,194 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-rows: var(--topbar-height) 1fr;
+  grid-template-areas:
+    'sidebar topbar'
+    'sidebar content';
+}
+
+/* ---- Sidebar ------------------------------------------------------------ */
+.sidebar {
+  grid-area: sidebar;
+  background-color: var(--color-neutral-900);
+  color: var(--color-neutral-300);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--space-3);
+  gap: var(--space-6);
+}
+
+.brand {
+  padding: 0 var(--space-2);
+}
+
+.brandName {
+  color: #fff;
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-md);
+  line-height: var(--leading-tight);
+}
+
+.brandTag {
+  font-size: var(--text-xs);
+  color: var(--color-neutral-500);
+  margin-top: 2px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navSection {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-neutral-500);
+  padding: var(--space-3) var(--space-2) var(--space-1);
+}
+
+.navLink {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-neutral-300);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.navLink:hover {
+  background-color: var(--color-neutral-800);
+  color: #fff;
+  text-decoration: none;
+}
+
+.navLinkActive {
+  background-color: var(--color-primary-600);
+  color: #fff;
+}
+
+.navLinkActive:hover {
+  background-color: var(--color-primary-600);
+}
+
+.navPending {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-neutral-600);
+  cursor: default;
+}
+
+/* ---- Topbar ------------------------------------------------------------- */
+.topbar {
+  grid-area: topbar;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+}
+
+.pageTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-800);
+}
+
+.userArea {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.userInfo {
+  text-align: right;
+  line-height: var(--leading-tight);
+}
+
+.userName {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.userRole {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.logout {
+  appearance: none;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.logout:hover {
+  background-color: var(--color-danger-50);
+  border-color: var(--color-danger-200);
+  color: var(--color-danger-700);
+}
+
+/* ---- Content ------------------------------------------------------------ */
+.content {
+  grid-area: content;
+  padding: var(--space-6);
+  max-width: var(--content-max-width);
+  width: 100%;
+}
+
+/* ---- Responsive: sidebar becomes a horizontal bar ----------------------- */
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      'sidebar'
+      'topbar'
+      'content';
+  }
+
+  .sidebar {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    overflow-x: auto;
+  }
+
+  .nav {
+    flex-direction: row;
+    gap: var(--space-1);
+  }
+
+  .navSection {
+    display: none;
+  }
+
+  .brandTag {
+    display: none;
+  }
+
+  .content {
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .pageTitle {
+    display: none;
+  }
+}

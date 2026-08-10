@@ -147,6 +147,57 @@ kbd {
   color: var(--color-neutral-600);
 }
 
+/* Data table. Wrap in .table-wrap so wide tables scroll inside their own
+   container instead of making the whole page scroll sideways on mobile. */
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.table th {
+  background-color: var(--color-surface-muted);
+  font-weight: var(--weight-semibold);
+  color: var(--color-neutral-600);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background-color: var(--color-neutral-50);
+}
+
+/* Page heading block used at the top of every module screen. */
+.page-header {
+  margin-bottom: var(--space-6);
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
 /* Visible to screen readers only. */
 .sr-only {
   position: absolute;

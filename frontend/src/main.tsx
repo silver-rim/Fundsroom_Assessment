@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 import App from './App';
 import './styles/global.css';
 
@@ -12,8 +13,12 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
+    {/* AuthProvider sits inside BrowserRouter so route guards and the provider
+        share one router context. */}
     <BrowserRouter>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 );

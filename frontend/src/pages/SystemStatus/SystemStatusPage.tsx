@@ -58,7 +58,9 @@ export default function SystemStatusPage(): JSX.Element {
   const isHealthy = health?.status === 'ok' && health.database.status === 'up';
 
   return (
-    <main className={styles.page}>
+    // A <div>, not a <main>: this page renders inside AppLayout's <main>, and
+    // nesting two main landmarks is invalid and confuses screen readers.
+    <div className={styles.page}>
       <section className={`card ${styles.panel}`}>
         <div className={styles.header}>
           <h1>{config.appName}</h1>
@@ -105,6 +107,6 @@ export default function SystemStatusPage(): JSX.Element {
           Frontend: React &middot; TypeScript &middot; Vite
         </p>
       </section>
-    </main>
+    </div>
   );
 }

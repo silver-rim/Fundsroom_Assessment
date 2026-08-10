@@ -12,10 +12,10 @@ inventory with a full stock-movement ledger, and sales challans with transaction
 
 ## Technology stack
 
-**Backend** Node.js 20+ · TypeScript (strict) · Express 5 · PostgreSQL via `pg` with hand-written SQL · Zod · JWT · bcrypt
-**Frontend** React 18 · TypeScript · Vite 6 · React Router · axios · plain CSS with design tokens
-**Database** PostgreSQL 16/17
-**Deployment** Vercel (frontend) · Render (backend) · Neon (PostgreSQL) — all free tiers
+**Backend** Node.js 20+ · TypeScript (strict) · Express 5 · PostgreSQL via `pg` with hand-written SQL · Zod · JWT · bcrypt  
+**Frontend** React 18 · TypeScript · Vite 6 · React Router · axios · plain CSS with design tokens  
+**Database** PostgreSQL 16/17  
+**Deployment** Vercel (frontend) · Render (backend) · Neon (PostgreSQL) — all free tiers  
 
 ---
 
@@ -76,7 +76,7 @@ mini-erp-crm/
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/<your-username>/mini-erp-crm.git
+git clone https://github.com/<your-username>/Fundsroom_Assessment.git
 cd mini-erp-crm
 
 cd backend  && npm install && cd ..
@@ -173,7 +173,8 @@ Passwords are bcrypt-hashed before they reach the database; no plaintext is ever
 script refuses to run when `NODE_ENV=production` unless `ALLOW_PRODUCTION_SEED=true` is set
 explicitly, so these defaults cannot be created on a production database by accident.
 
-*Login itself is implemented in Phase 2.*
+On the sign-in screen each account is available as a one-click chip, so you can switch roles without
+retyping credentials.
 
 ---
 
@@ -231,8 +232,9 @@ How they are managed:
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System / frontend / backend / database architecture, auth flow, request flow, error handling, role permission matrix |
 | [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) | Every table, column, key, constraint and index, plus the reference DDL and the seed-data plan |
 | [docs/API_PLAN.md](docs/API_PLAN.md) | All 26 planned REST endpoints, conventions, response envelope, error codes, validation rules |
+| [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) | JWT design, login flow, password storage, **permission matrix**, security decisions and limitations, 21 test results |
 
-Documents added in later phases: `AUTHENTICATION.md`, `CRM_MODULE.md`, `INVENTORY_MODULE.md`,
+Documents added in later phases: `CRM_MODULE.md`, `INVENTORY_MODULE.md`,
 `SALES_CHALLAN_MODULE.md`, `FRONTEND_GUIDE.md`, `TESTING.md`, `API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
 
 ---
@@ -243,7 +245,7 @@ Documents added in later phases: `AUTHENTICATION.md`, `CRM_MODULE.md`, `INVENTOR
 | --- | --- | --- |
 | 0 | Analysis, architecture, database design, API plan | ✅ Complete |
 | 1 | Backend + frontend scaffolding, migrations, seed data | ✅ Complete |
-| 2 | Authentication and role-based access | ⬜ |
+| 2 | Authentication and role-based access | ✅ Complete |
 | 3 | Customer CRM module | ⬜ |
 | 4 | Products, inventory and stock movements | ⬜ |
 | 5 | Sales challans with transactional stock deduction | ⬜ |
