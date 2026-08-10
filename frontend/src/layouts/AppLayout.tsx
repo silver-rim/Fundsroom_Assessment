@@ -22,12 +22,14 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Home' },
   { to: '/customers', label: 'Customers' },
+  { to: '/products', label: 'Products' },
+  { to: '/inventory', label: 'Inventory ledger' },
   { to: '/users', label: 'Users', allow: ['ADMIN'] },
   { to: '/status', label: 'System status' },
 ];
 
 /** Modules that do not exist yet, shown greyed out so the plan is visible. */
-const UPCOMING = ['Products', 'Inventory', 'Sales challans'];
+const UPCOMING = ['Sales challans'];
 
 export default function AppLayout(): JSX.Element {
   const { user, logout } = useAuth();

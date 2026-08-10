@@ -3,10 +3,11 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 3 — Customer CRM module.**
-> Working today: JWT login with four roles, role-based authorization, and the full customer CRM
-> (search, filters, pagination, detail page, follow-up notes). Products and inventory arrive in
-> Phase 4, sales challans in Phase 5. The full submission README (features, credentials,
+> **Status: Phase 4 — Products & Inventory.**
+> Working today: JWT login with four roles and role-based authorization, the full customer CRM
+> (search, filters, pagination, follow-up notes), and the product/inventory module with an
+> append-only stock ledger, low-stock alerting and transactional negative-stock prevention.
+> Sales challans arrive in Phase 5. The full submission README (features, credentials,
 > deployment, limitations) is produced in Phase 10.
 
 ---
@@ -165,10 +166,10 @@ when those variables are absent.
 
 | Role | Email | Default password |
 | --- | --- | --- |
-| Admin | `admin@minierp.local` | `Admin@12345` |
-| Sales | `sales@minierp.local` | `Sales@12345` |
-| Warehouse | `warehouse@minierp.local` | `Warehouse@12345` |
-| Accounts | `accounts@minierp.local` | `Accounts@12345` |
+| Admin | `admin@fundsroom.local` | `Admin@12345` |
+| Sales | `sales@fundsroom.local` | `Sales@12345` |
+| Warehouse | `warehouse@fundsroom.local` | `Warehouse@12345` |
+| Accounts | `accounts@fundsroom.local` | `Accounts@12345` |
 
 Passwords are bcrypt-hashed before they reach the database; no plaintext is ever stored. The seed
 script refuses to run when `NODE_ENV=production` unless `ALLOW_PRODUCTION_SEED=true` is set
@@ -235,8 +236,9 @@ How they are managed:
 | [docs/API_PLAN.md](docs/API_PLAN.md) | All 26 planned REST endpoints, conventions, response envelope, error codes, validation rules |
 | [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) | JWT design, login flow, password storage, **permission matrix**, security decisions and limitations, 21 test results |
 | [docs/CRM_MODULE.md](docs/CRM_MODULE.md) | Customer workflow, data model, endpoints, validation, role access, frontend behaviour, 31 test results |
+| [docs/INVENTORY_MODULE.md](docs/INVENTORY_MODULE.md) | Product master, the stock-only-moves-through-the-ledger rule, transaction & row-locking design, low-stock logic, 25 test results plus a concurrency proof |
 
-Documents added in later phases: `INVENTORY_MODULE.md`,
+Documents added in later phases:
 `SALES_CHALLAN_MODULE.md`, `FRONTEND_GUIDE.md`, `TESTING.md`, `API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
 
 ---
@@ -249,7 +251,7 @@ Documents added in later phases: `INVENTORY_MODULE.md`,
 | 1 | Backend + frontend scaffolding, migrations, seed data | ✅ Complete |
 | 2 | Authentication and role-based access | ✅ Complete |
 | 3 | Customer CRM module | ✅ Complete |
-| 4 | Products, inventory and stock movements | ⬜ |
+| 4 | Products, inventory and stock movements | ✅ Complete |
 | 5 | Sales challans with transactional stock deduction | ⬜ |
 | 6 | Dashboard and complete frontend UX | ⬜ |
 | 7 | Testing, validation and bug fixing | ⬜ |

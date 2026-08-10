@@ -41,25 +41,25 @@ interface SeedUser {
 const SEED_USERS: SeedUser[] = [
   {
     name: 'Asha Menon',
-    email: 'admin@minierp.local',
+    email: 'admin@fundsroom.local',
     role: 'ADMIN',
     password: env.SEED_ADMIN_PASSWORD,
   },
   {
     name: 'Nikhil Rao',
-    email: 'sales@minierp.local',
+    email: 'sales@fundsroom.local',
     role: 'SALES',
     password: env.SEED_SALES_PASSWORD,
   },
   {
     name: 'Farid Ali',
-    email: 'warehouse@minierp.local',
+    email: 'warehouse@fundsroom.local',
     role: 'WAREHOUSE',
     password: env.SEED_WAREHOUSE_PASSWORD,
   },
   {
     name: 'Meera Iyer',
-    email: 'accounts@minierp.local',
+    email: 'accounts@fundsroom.local',
     role: 'ACCOUNTS',
     password: env.SEED_ACCOUNTS_PASSWORD,
   },
@@ -322,7 +322,12 @@ async function seedCustomers(client: PoolClient, createdBy: number): Promise<voi
          (name, mobile, email, business_name, gst_number, customer_type,
           address, status, follow_up_date, notes, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       ON CONFLICT (mobile) DO NOTHING
+       -- The WHERE clause is required, not optional: migration 002 replaced the
+       -- plain UNIQUE(mobile) constraint with a PARTIAL unique index over live
+       -- rows. ON CONFLICT can only infer a partial index if the predicate is
+       -- restated here; without it PostgreSQL raises "there is no unique or
+       -- exclusion constraint matching the ON CONFLICT specification".
+       ON CONFLICT (mobile) WHERE deleted_at IS NULL DO NOTHING
        RETURNING id`,
       [
         customer.name,

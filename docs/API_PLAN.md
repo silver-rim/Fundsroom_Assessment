@@ -143,14 +143,14 @@ the case study.
 
 ```jsonc
 // request
-{ "email": "admin@minierp.local", "password": "••••••••" }
+{ "email": "admin@fundsroom.local", "password": "••••••••" }
 
 // 200
 { "success": true,
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIs…",
     "expiresIn": 28800,
-    "user": { "id": 1, "name": "Asha Menon", "email": "admin@minierp.local", "role": "ADMIN" }
+    "user": { "id": 1, "name": "Asha Menon", "email": "admin@fundsroom.local", "role": "ADMIN" }
   } }
 ```
 

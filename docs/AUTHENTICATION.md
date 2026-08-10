@@ -50,7 +50,7 @@ A user holds exactly one role, stored in `users.role` and constrained by
 
 ```jsonc
 // request
-{ "email": "admin@minierp.local", "password": "Admin@12345" }
+{ "email": "admin@fundsroom.local", "password": "Admin@12345" }
 
 // 200 OK
 {
@@ -61,7 +61,7 @@ A user holds exactly one role, stored in `users.role` and constrained by
     "user": {
       "id": 1,
       "name": "Asha Menon",
-      "email": "admin@minierp.local",
+      "email": "admin@fundsroom.local",
       "role": "ADMIN",
       "isActive": true,
       "createdAt": "2026-08-10T13:20:04.981Z"
@@ -77,8 +77,8 @@ A user holds exactly one role, stored in `users.role` and constrained by
 | Body is not valid JSON | 400 | `BAD_REQUEST` |
 | Unknown email **or** wrong password **or** deactivated account | 401 | `INVALID_CREDENTIALS` |
 
-Email matching is **case-insensitive** — `ADMIN@MiniErp.Local` signs in the same account as
-`admin@minierp.local`, resolved through the `uq_users_email_lower` functional index.
+Email matching is **case-insensitive** — `ADMIN@FundsRoom.Local` signs in the same account as
+`admin@fundsroom.local`, resolved through the `uq_users_email_lower` functional index.
 
 ### `GET /api/auth/me` — any authenticated role
 
@@ -87,7 +87,7 @@ into a session, so a revoked or stale token cannot produce a logged-in-looking U
 
 ```jsonc
 { "success": true,
-  "data": { "id": 2, "name": "Nikhil Rao", "email": "sales@minierp.local",
+  "data": { "id": 2, "name": "Nikhil Rao", "email": "sales@fundsroom.local",
             "role": "SALES", "isActive": true, "createdAt": "…" } }
 ```
 
@@ -298,7 +298,7 @@ Executed against the running API on 2026-08-10. Full commands in §13.
 | 3 | Wrong password | 401 `INVALID_CREDENTIALS` | 401 `INVALID_CREDENTIALS` — "Invalid email or password." | ✅ |
 | 4 | Unknown email | identical to #3 | byte-identical | ✅ |
 | 5 | Invalid email + missing password | 422 with both fields | 422, `body.email` and `body.password` both listed | ✅ |
-| 6 | Mixed-case email | 200 | 200, resolves to `admin@minierp.local` | ✅ |
+| 6 | Mixed-case email | 200 | 200, resolves to `admin@fundsroom.local` | ✅ |
 | 7 | Malformed JSON body | 400 `BAD_REQUEST` | 400 "Request body is not valid JSON." | ✅ |
 | 8 | All four roles sign in | 200 ×4 | 200 ×4 | ✅ |
 
@@ -335,7 +335,7 @@ Executed against the running API on 2026-08-10. Full commands in §13.
 # 1. Sign in
 curl -s -X POST http://localhost:4000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@minierp.local","password":"Admin@12345"}'
+  -d '{"email":"admin@fundsroom.local","password":"Admin@12345"}'
 
 # 2. Use the token
 TOKEN="<paste the token>"
@@ -344,7 +344,7 @@ curl -s http://localhost:4000/api/users       -H "Authorization: Bearer $TOKEN"
 
 # 3. Wrong role -> 403
 curl -s -X POST http://localhost:4000/api/auth/login -H "Content-Type: application/json" \
-  -d '{"email":"sales@minierp.local","password":"Sales@12345"}'
+  -d '{"email":"sales@fundsroom.local","password":"Sales@12345"}'
 curl -s -i http://localhost:4000/api/users -H "Authorization: Bearer <sales token>" | head -1
 
 # 4. No token -> 401

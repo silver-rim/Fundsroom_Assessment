@@ -12,10 +12,10 @@ import styles from './LoginPage.module.css';
  * from the deployed build if the credentials are not meant to be public.
  */
 const DEMO_ACCOUNTS: Array<{ role: Role; email: string; password: string }> = [
-  { role: 'ADMIN', email: 'admin@minierp.local', password: 'Admin@12345' },
-  { role: 'SALES', email: 'sales@minierp.local', password: 'Sales@12345' },
-  { role: 'WAREHOUSE', email: 'warehouse@minierp.local', password: 'Warehouse@12345' },
-  { role: 'ACCOUNTS', email: 'accounts@minierp.local', password: 'Accounts@12345' },
+  { role: 'ADMIN', email: 'admin@fundsroom.local', password: 'Admin@12345' },
+  { role: 'SALES', email: 'sales@fundsroom.local', password: 'Sales@12345' },
+  { role: 'WAREHOUSE', email: 'warehouse@fundsroom.local', password: 'Warehouse@12345' },
+  { role: 'ACCOUNTS', email: 'accounts@fundsroom.local', password: 'Accounts@12345' },
 ];
 
 interface FieldErrors {
@@ -128,7 +128,7 @@ export default function LoginPage(): JSX.Element {
                 disabled={isSubmitting}
                 aria-invalid={Boolean(fieldErrors.email)}
                 aria-describedby={fieldErrors.email ? 'email-error' : undefined}
-                placeholder="you@minierp.local"
+                placeholder="you@fundsroom.local"
                 autoFocus
               />
               {fieldErrors.email && (
