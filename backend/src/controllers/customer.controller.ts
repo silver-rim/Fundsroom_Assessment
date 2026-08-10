@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import * as customerService from '../services/customer.service';
+import * as challanService from '../services/challan.service';
 import { sendPaginated, sendSuccess } from '../utils/httpResponse';
 import type { IdParam } from '../validators/common.validator';
 import type {
@@ -59,6 +60,19 @@ export async function listFollowUps(req: Request, res: Response): Promise<void> 
   const { followUps, pagination } = await customerService.listFollowUps(id, filters);
 
   sendPaginated(res, followUps, pagination);
+}
+
+/**
+ * GET /api/customers/:id/challans
+ *
+ * Planned in Phase 0, deferred until Phase 5 because challans did not exist yet.
+ */
+export async function listCustomerChallans(req: Request, res: Response): Promise<void> {
+  const { id } = req.validated.params as IdParam;
+  const { page, limit } = req.validated.query as ListFollowUpsQuery;
+  const { challans, pagination } = await challanService.listCustomerChallans(id, page, limit);
+
+  sendPaginated(res, challans, pagination);
 }
 
 /** POST /api/customers/:id/follow-ups */

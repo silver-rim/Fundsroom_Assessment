@@ -3,12 +3,13 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 4 — Products & Inventory.**
-> Working today: JWT login with four roles and role-based authorization, the full customer CRM
-> (search, filters, pagination, follow-up notes), and the product/inventory module with an
-> append-only stock ledger, low-stock alerting and transactional negative-stock prevention.
-> Sales challans arrive in Phase 5. The full submission README (features, credentials,
-> deployment, limitations) is produced in Phase 10.
+> **Status: Phase 5 — all core modules complete.**
+> Working today: JWT login with four roles and role-based authorization, the customer CRM
+> (search, filters, pagination, follow-up notes), the product/inventory module with an append-only
+> stock ledger and low-stock alerting, and sales challans with Draft/Confirmed/Cancelled lifecycle,
+> all-or-nothing transactional stock deduction and immutable product snapshots.
+> Remaining: dashboard and UX polish (Phase 6), system testing (7), API docs & Postman (8),
+> deployment (9), final submission README (10).
 
 ---
 
@@ -237,6 +238,7 @@ How they are managed:
 | [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) | JWT design, login flow, password storage, **permission matrix**, security decisions and limitations, 21 test results |
 | [docs/CRM_MODULE.md](docs/CRM_MODULE.md) | Customer workflow, data model, endpoints, validation, role access, frontend behaviour, 31 test results |
 | [docs/INVENTORY_MODULE.md](docs/INVENTORY_MODULE.md) | Product master, the stock-only-moves-through-the-ledger rule, transaction & row-locking design, low-stock logic, 25 test results plus a concurrency proof |
+| [docs/SALES_CHALLAN_MODULE.md](docs/SALES_CHALLAN_MODULE.md) | Challan lifecycle, draft vs confirmed, the two-pass transactional stock deduction, **product snapshot**, challan numbering, 41 test results plus a concurrency proof |
 
 Documents added in later phases:
 `SALES_CHALLAN_MODULE.md`, `FRONTEND_GUIDE.md`, `TESTING.md`, `API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
@@ -252,7 +254,7 @@ Documents added in later phases:
 | 2 | Authentication and role-based access | ✅ Complete |
 | 3 | Customer CRM module | ✅ Complete |
 | 4 | Products, inventory and stock movements | ✅ Complete |
-| 5 | Sales challans with transactional stock deduction | ⬜ |
+| 5 | Sales challans with transactional stock deduction | ✅ Complete |
 | 6 | Dashboard and complete frontend UX | ⬜ |
 | 7 | Testing, validation and bug fixing | ⬜ |
 | 8 | API documentation and Postman collection | ⬜ |

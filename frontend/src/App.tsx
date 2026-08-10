@@ -29,6 +29,9 @@ import ProductsListPage from './pages/Products/ProductsListPage';
 import ProductDetailPage from './pages/Products/ProductDetailPage';
 import ProductFormPage from './pages/Products/ProductFormPage';
 import StockMovementsPage from './pages/Inventory/StockMovementsPage';
+import ChallansListPage from './pages/Challans/ChallansListPage';
+import ChallanDetailPage from './pages/Challans/ChallanDetailPage';
+import ChallanFormPage from './pages/Challans/ChallanFormPage';
 
 export default function App(): JSX.Element {
   return (
@@ -59,6 +62,17 @@ export default function App(): JSX.Element {
           <Route element={<RoleRoute allow={['ADMIN', 'WAREHOUSE']} />}>
             <Route path="/products/new" element={<ProductFormPage />} />
             <Route path="/products/:id/edit" element={<ProductFormPage />} />
+          </Route>
+
+          {/* Sales challans — all roles may read; creating and editing a draft
+              is Admin/Sales. Confirming is additionally open to Warehouse, and
+              that rule lives on the detail page and in the API. */}
+          <Route path="/challans" element={<ChallansListPage />} />
+          <Route path="/challans/:id" element={<ChallanDetailPage />} />
+
+          <Route element={<RoleRoute allow={['ADMIN', 'SALES']} />}>
+            <Route path="/challans/new" element={<ChallanFormPage />} />
+            <Route path="/challans/:id/edit" element={<ChallanFormPage />} />
           </Route>
 
           <Route element={<RoleRoute allow={['ADMIN']} />}>

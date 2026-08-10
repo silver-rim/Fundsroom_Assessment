@@ -11,6 +11,7 @@ import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
 import { validate } from '../middleware/validate';
 import {
+  CHALLAN_READ,
   CUSTOMER_DELETE,
   CUSTOMER_READ,
   CUSTOMER_WRITE,
@@ -79,6 +80,13 @@ router.post(
   authorize(FOLLOW_UP_WRITE),
   validate({ params: idParamSchema, body: createFollowUpSchema }),
   asyncHandler(customerController.addFollowUp),
+);
+
+router.get(
+  '/:id/challans',
+  authorize(CHALLAN_READ),
+  validate({ params: idParamSchema, query: listFollowUpsQuerySchema }),
+  asyncHandler(customerController.listCustomerChallans),
 );
 
 export default router;
