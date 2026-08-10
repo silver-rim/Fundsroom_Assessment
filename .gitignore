@@ -1,0 +1,49 @@
+# ---- Dependencies ----
+node_modules/
+.pnp/
+.pnp.js
+
+# ---- Environment (NEVER commit real secrets; commit .env.example only) ----
+.env
+.env.*
+!.env.example
+
+# ---- Build output ----
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# ---- Logs ----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- Test / coverage ----
+coverage/
+.nyc_output/
+
+# ---- Caches ----
+.cache/
+.vite/
+.eslintcache
+.parcel-cache/
+
+# ---- Editors ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Local database dumps / scratch ----
+*.dump
+*.sqlite
+tmp/
