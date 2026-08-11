@@ -9,6 +9,7 @@
 import type { PoolClient } from 'pg';
 import { query } from '../config/db';
 import { offsetFor, resolveSortColumn, resolveSortDirection } from '../utils/pagination';
+import { likeContains } from '../utils/sql';
 import type { ChallanStatus } from '../types/domain';
 import type { ListChallansQuery } from '../validators/challan.validator';
 
@@ -176,7 +177,7 @@ function buildFilters(filters: ListChallansQuery): { where: string; params: unkn
   const params: unknown[] = [];
 
   if (filters.search) {
-    params.push(`%${filters.search.toLowerCase()}%`);
+    params.push(likeContains(filters.search));
     const p = `$${params.length}`;
     conditions.push(
       `(lower(ch.challan_number) LIKE ${p} OR lower(cu.business_name) LIKE ${p} OR lower(cu.name) LIKE ${p})`,

@@ -11,6 +11,7 @@ import { LinkButton } from '../../components/ui/Button';
 import { EmptyState, ErrorState, InlineSpinner } from '../../components/ui/States';
 import Pagination from '../../components/ui/Pagination';
 import { formatCurrency, formatDateTime } from '../../utils/format';
+import { parsePage } from '../../utils/params';
 import {
   CHALLAN_STATUSES,
   CHALLAN_STATUS_BADGE,
@@ -24,7 +25,7 @@ export default function ChallansListPage(): JSX.Element {
   const { hasRole } = useAuth();
   const canCreate = hasRole('ADMIN', 'SALES');
 
-  const page = Number(searchParams.get('page') ?? '1');
+  const page = parsePage(searchParams.get('page'));
   const search = searchParams.get('search') ?? '';
   const status = (searchParams.get('status') ?? '') as ChallanStatus | '';
   const dateFrom = searchParams.get('dateFrom') ?? '';

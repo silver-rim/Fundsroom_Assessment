@@ -37,6 +37,10 @@ const envSchema = z.object({
 
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
 
+  // Optional. Unset means "decide from NODE_ENV" (see logger.ts). 'silent'
+  // exists for the test suite, where request logs bury the assertion output.
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error', 'silent']).optional(),
+
   // Seed-only. Defaults are intentional throwaway development credentials;
   // seed.ts refuses to run against NODE_ENV=production without an explicit opt-in.
   SEED_ADMIN_PASSWORD: z.string().min(8).default('Admin@12345'),
@@ -69,6 +73,7 @@ export const env = {
     .filter((origin) => origin.length > 0),
   isProduction: parsed.data.NODE_ENV === 'production',
   isDevelopment: parsed.data.NODE_ENV === 'development',
+  isTest: parsed.data.NODE_ENV === 'test',
 } as const;
 
 export type Env = typeof env;

@@ -11,6 +11,7 @@ import { useApi } from '../../hooks/useApi';
 import { EmptyState, ErrorState, InlineSpinner } from '../../components/ui/States';
 import Pagination from '../../components/ui/Pagination';
 import { formatDateTime } from '../../utils/format';
+import { parsePage } from '../../utils/params';
 import {
   MOVEMENT_REFERENCE_LABELS,
   MOVEMENT_REFERENCE_TYPES,
@@ -23,7 +24,7 @@ import styles from './StockMovementsPage.module.css';
 export default function StockMovementsPage(): JSX.Element {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const page = Number(searchParams.get('page') ?? '1');
+  const page = parsePage(searchParams.get('page'));
   const movementType = (searchParams.get('movementType') ?? '') as MovementType | '';
   const referenceType = (searchParams.get('referenceType') ?? '') as MovementReferenceType | '';
   const dateFrom = searchParams.get('dateFrom') ?? '';

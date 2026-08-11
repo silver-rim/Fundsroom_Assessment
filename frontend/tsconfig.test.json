@@ -1,0 +1,11 @@
+{
+  // Type-checks the unit tests only. They run under Node (node:test via tsx),
+  // so unlike the app build they need Node's types — which is exactly why they
+  // are kept out of tsconfig.json.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["src/**/*.test.ts", "src/utils"],
+  "exclude": []
+}

@@ -14,6 +14,7 @@ import { LinkButton } from '../../components/ui/Button';
 import { EmptyState, ErrorState, InlineSpinner } from '../../components/ui/States';
 import Pagination from '../../components/ui/Pagination';
 import { formatDate, isOverdue, todayIso } from '../../utils/format';
+import { parsePage } from '../../utils/params';
 import {
   CUSTOMER_STATUSES,
   CUSTOMER_STATUS_BADGE,
@@ -30,7 +31,7 @@ export default function CustomersListPage(): JSX.Element {
   const { hasRole } = useAuth();
   const canEdit = hasRole('ADMIN', 'SALES');
 
-  const page = Number(searchParams.get('page') ?? '1');
+  const page = parsePage(searchParams.get('page'));
   const search = searchParams.get('search') ?? '';
   const status = (searchParams.get('status') ?? '') as CustomerStatus | '';
   const customerType = (searchParams.get('customerType') ?? '') as CustomerType | '';

@@ -50,7 +50,16 @@ export function validate(schemas: RequestSchemas): RequestHandler {
       const schema = schemas[source];
       if (!schema) continue;
 
-      const result = schema.safeParse(req[source]);
+      // Express 5's json parser leaves req.body as `undefined` when the request
+      // carries no body at all, and a Zod object schema rejects undefined even
+      // when every one of its fields is optional. That made a legitimately
+      // body-less POST — `POST /challans/:id/cancel` with no reason — fail with
+      // 422 "Required". Treating an absent body as `{}` fixes that for every
+      // endpoint at once, and where the body IS required the caller now gets
+      // per-field "Required" messages instead of one opaque type error.
+      const value = source === 'body' && req.body === undefined ? {} : req[source];
+
+      const result = schema.safeParse(value);
       if (result.success) {
         validated[source] = result.data;
       } else {

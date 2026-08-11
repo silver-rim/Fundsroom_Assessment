@@ -62,8 +62,11 @@
 | 409 | `DUPLICATE_MOBILE` / `DUPLICATE_SKU` / `DUPLICATE_EMAIL` | Unique constraint conflict |
 | 409 | `INVALID_STATE` | Illegal status transition (e.g. confirming a confirmed challan) |
 | 409 | `INSUFFICIENT_STOCK` | A movement or confirmation would drive stock below zero |
+| 413 | `PAYLOAD_TOO_LARGE` | Request body above the 100 kB limit |
+| 415 | `UNSUPPORTED_MEDIA_TYPE` | Body sent as something other than JSON |
 | 422 | `VALIDATION_ERROR` | Well-formed request that fails schema validation |
 | 500 | `INTERNAL_ERROR` | Unexpected server failure. Message is always generic |
+| 503 | `SERVICE_UNAVAILABLE` | The database is unreachable |
 
 ---
 

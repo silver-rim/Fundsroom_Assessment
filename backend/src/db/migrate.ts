@@ -93,4 +93,9 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+// Only when run as a script. Without this guard, importing `runMigrations` from
+// anywhere — the test harness does exactly that — would also execute main(),
+// which ends the pool and calls process.exit(0) underneath its importer.
+if (require.main === module) {
+  void main();
+}

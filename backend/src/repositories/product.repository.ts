@@ -9,6 +9,7 @@
 import type { PoolClient } from 'pg';
 import { query } from '../config/db';
 import { offsetFor, resolveSortColumn, resolveSortDirection } from '../utils/pagination';
+import { likeContains } from '../utils/sql';
 import type {
   CreateProductInput,
   ListProductsQuery,
@@ -107,7 +108,7 @@ function buildFilters(filters: ListProductsQuery): { where: string; params: unkn
   const params: unknown[] = [];
 
   if (filters.search) {
-    params.push(`%${filters.search.toLowerCase()}%`);
+    params.push(likeContains(filters.search));
     const p = `$${params.length}`;
     conditions.push(
       `(lower(p.name) LIKE ${p} OR lower(p.sku) LIKE ${p} OR lower(p.category) LIKE ${p})`,

@@ -220,10 +220,14 @@ Run against a seeded development database (7 customers, 10 products), backend on
 | 16 | `npm run build` | ✅ 145 modules, 300.65 kB JS (95.06 kB gzip) |
 | 17 | Backend `npm run typecheck` / `npm run build` | ✅ clean |
 
-**Not yet covered:** the dashboard has not been exercised through a browser session — rendering,
-navigation from each tile, and the role-specific action buttons are verified by the type checker and
-by the API contract, not by clicking. That is Phase 7's job, and it is listed there rather than
-claimed here.
+**Not yet covered:** the dashboard has not been exercised by an automated browser session —
+rendering, navigation from each tile, and the role-specific action buttons are verified by the
+strict type checker, by the API contract and by manual use, not by an automated click.
+
+Phase 7 did not close this gap: it added 231 backend integration tests and 18 frontend *unit* tests,
+and deliberately did not introduce a browser-automation dependency. The gap is recorded honestly in
+[TESTING.md](./TESTING.md) §6 as the first item, along with why a Playwright smoke suite is the
+obvious next step.
 
 ---
 

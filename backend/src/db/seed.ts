@@ -451,4 +451,7 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+// Only when run as a script — see the identical guard in migrate.ts.
+if (require.main === module) {
+  void main();
+}

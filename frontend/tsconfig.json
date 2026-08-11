@@ -21,5 +21,10 @@
     "noEmit": true,
     "types": ["vite/client"]
   },
-  "include": ["src", "vite.config.ts"]
+  // Test files are excluded on purpose: they import from `node:*`, and the app
+  // build must not have Node's types in scope or a component could reach for a
+  // Node API that does not exist in a browser. They are type-checked separately
+  // by tsconfig.test.json, which `npm run typecheck` also runs.
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["src/**/*.test.ts"]
 }

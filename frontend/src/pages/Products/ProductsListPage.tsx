@@ -14,6 +14,7 @@ import { LinkButton } from '../../components/ui/Button';
 import { EmptyState, ErrorState, InlineSpinner } from '../../components/ui/States';
 import Pagination from '../../components/ui/Pagination';
 import { formatCurrency } from '../../utils/format';
+import { parsePage } from '../../utils/params';
 import { stockLevel } from '../../types/product';
 import styles from './ProductsListPage.module.css';
 
@@ -22,7 +23,7 @@ export default function ProductsListPage(): JSX.Element {
   const { hasRole } = useAuth();
   const canEdit = hasRole('ADMIN', 'WAREHOUSE');
 
-  const page = Number(searchParams.get('page') ?? '1');
+  const page = parsePage(searchParams.get('page'));
   const search = searchParams.get('search') ?? '';
   const category = searchParams.get('category') ?? '';
   const lowStock = searchParams.get('lowStock') === 'true';

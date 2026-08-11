@@ -9,9 +9,24 @@
 import { env } from '../config/env';
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+/** 'silent' is a threshold, never something you can log AT. */
+type LogThreshold = LogLevel | 'silent';
 
-const LEVEL_ORDER: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };
-const MINIMUM_LEVEL: LogLevel = env.isProduction ? 'info' : 'debug';
+const LEVEL_ORDER: Record<LogThreshold, number> = {
+  debug: 10,
+  info: 20,
+  warn: 30,
+  error: 40,
+  silent: Number.POSITIVE_INFINITY,
+};
+
+/**
+ * An explicit LOG_LEVEL always wins. Otherwise: production keeps `debug` noise
+ * out of the log aggregator, the test suite stays silent so assertions are
+ * readable, and development shows everything.
+ */
+const MINIMUM_LEVEL: LogThreshold =
+  env.LOG_LEVEL ?? (env.isProduction ? 'info' : env.isTest ? 'silent' : 'debug');
 
 function write(level: LogLevel, message: string, meta?: Record<string, unknown>): void {
   if (LEVEL_ORDER[level] < LEVEL_ORDER[MINIMUM_LEVEL]) return;

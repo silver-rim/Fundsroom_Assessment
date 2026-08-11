@@ -3,14 +3,15 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 6 — feature-complete. All 26 planned endpoints are implemented.**
+> **Status: Phase 7 — feature-complete and tested. All 26 endpoints implemented, 249 automated tests passing.**
 > Working today: JWT login with four roles and role-based authorization, the customer CRM
 > (search, filters, pagination, follow-up notes), the product/inventory module with an append-only
 > stock ledger and low-stock alerting, sales challans with Draft/Confirmed/Cancelled lifecycle,
 > all-or-nothing transactional stock deduction and immutable product snapshots, and an operations
 > dashboard whose every counter is an aggregate computed live from the tables it describes.
-> Remaining: system testing (Phase 7), API docs & Postman (8), deployment (9),
-> final submission README (10).
+> Phase 7 added 231 backend integration tests against a real PostgreSQL database — including three
+> concurrency proofs — plus 18 frontend unit tests, and fixed the five defects they found.
+> Remaining: API docs & Postman (Phase 8), deployment (9), final submission README (10).
 
 ---
 
@@ -28,7 +29,9 @@ inventory with a full stock-movement ledger, and sales challans with transaction
 ```text
 mini-erp-crm/
 ├── backend/
-│   ├── scripts/copy-assets.mjs      copies .sql migrations into dist/ after tsc
+│   ├── scripts/
+│   │   ├── copy-assets.mjs          copies .sql migrations into dist/ after tsc
+│   │   └── test.mjs                 provisions an isolated test database, then runs node --test
 │   ├── src/
 │   │   ├── config/                  env.ts (validated config), db.ts (pool + withTransaction),
 │   │   │                            permissions.ts (the role matrix, in executable form)
@@ -42,8 +45,9 @@ mini-erp-crm/
 │   │   │   ├── migrations/          numbered, forward-only .sql files
 │   │   │   ├── migrate.ts           migration runner
 │   │   │   └── seed.ts              idempotent development seed
+│   │   ├── tests/                   integration tests + helpers (harness, fixtures)
 │   │   ├── types/                   domain enums shared across layers
-│   │   ├── utils/                   AppError, httpResponse, logger, password, jwt, pagination
+│   │   ├── utils/                   AppError, httpResponse, logger, password, jwt, pagination, sql
 │   │   ├── app.ts                   express assembly
 │   │   └── server.ts                entry point, graceful shutdown
 │   ├── .env.example
@@ -204,6 +208,7 @@ retyping credentials.
 | `npm run dev` | Start with hot reload (tsx watch) |
 | `npm run build` | Compile TypeScript to `dist/` and copy the `.sql` migrations across |
 | `npm start` | Run the compiled build (production) |
+| `npm test` | Run the 231 integration tests against an isolated `<database>_test` database |
 | `npm run typecheck` | Type-check without emitting |
 | `npm run migrate` | Apply pending migrations |
 | `npm run seed` | Insert development seed data |
@@ -216,7 +221,8 @@ retyping credentials.
 | `npm run dev` | Vite dev server on port 5173 |
 | `npm run build` | Type-check, then build to `dist/` |
 | `npm run preview` | Serve the production build locally |
-| `npm run typecheck` | Type-check without emitting |
+| `npm test` | Run the 18 unit tests over the pure utilities |
+| `npm run typecheck` | Type-check the app and the tests |
 
 ---
 
@@ -254,9 +260,10 @@ How they are managed:
 | [docs/INVENTORY_MODULE.md](docs/INVENTORY_MODULE.md) | Product master, the stock-only-moves-through-the-ledger rule, transaction & row-locking design, low-stock logic, 25 test results plus a concurrency proof |
 | [docs/SALES_CHALLAN_MODULE.md](docs/SALES_CHALLAN_MODULE.md) | Challan lifecycle, draft vs confirmed, the two-pass transactional stock deduction, **product snapshot**, challan numbering, 41 test results plus a concurrency proof |
 | [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) | The dashboard (what every counter means and why), frontend architecture, the four-states and URL-as-filter-state conventions, navigation, accessibility, 17 test results |
+| [docs/TESTING.md](docs/TESTING.md) | How to run the suite, why it is integration-first, coverage by area, the concurrency and snapshot proofs, **the five defects found and fixed**, and what is deliberately not covered |
 
 Documents added in later phases:
-`TESTING.md`, `API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
+`API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
 
 ---
 
@@ -271,7 +278,7 @@ Documents added in later phases:
 | 4 | Products, inventory and stock movements | ✅ Complete |
 | 5 | Sales challans with transactional stock deduction | ✅ Complete |
 | 6 | Dashboard and complete frontend UX | ✅ Complete |
-| 7 | Testing, validation and bug fixing | ⬜ |
+| 7 | Testing, validation and bug fixing | ✅ Complete |
 | 8 | API documentation and Postman collection | ⬜ |
 | 9 | Deployment | ⬜ |
 | 10 | Final documentation and submission preparation | ⬜ |
