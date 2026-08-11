@@ -146,6 +146,7 @@ debuggable. Deployments use the production settings in `render.yaml`.
 
 | Symptom | Cause |
 | --- | --- |
+| Nothing at `http://localhost`, or at `http://localhost:5173` | The app is on **`WEB_PORT`, default 8080**. Nothing is published on port 80, so the bare hostname serves nothing; and 5173 is the Vite dev server, which only runs under `npm run dev`. Check `docker compose ps` — if `web` is `Up (healthy)`, the containers are fine and it is the URL that is wrong |
 | `port is already allocated` | Something already holds 8080, 4000 or 5433. Change it — see §4 — or stop the other process |
 | App loads, every request fails with a CORS error | `CORS_ORIGINS` does not match the browser's origin. It must equal `http://localhost:<WEB_PORT>` exactly |
 | App calls the wrong API URL | `VITE_API_BASE_URL` changed without a rebuild (§3) |

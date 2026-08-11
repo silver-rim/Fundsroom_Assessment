@@ -113,7 +113,7 @@ mini-erp-crm/
 │   ├── .env.example
 │   ├── Dockerfile                   builds the SPA, then serves it with nginx
 │   ├── index.html
-│   ├── nginx.conf                   SPA fallback + caching, mirroring vercel.json
+│   ├── nginx.conf                   SPA fallback, caching and security headers
 │   ├── package.json
 │   ├── vercel.json                  SPA rewrite + asset caching for Vercel
 │   └── vite.config.ts
@@ -141,8 +141,19 @@ command, migrated and seeded:
 docker compose up --build
 ```
 
-App on <http://localhost:8080>, API on <http://localhost:4000/api/health>. Sign in with
-`admin@fundsroom.local` / `Admin@12345`.
+| | Where it is |
+| --- | --- |
+| App | <http://localhost:8080> |
+| API | <http://localhost:4000/api/health> |
+| PostgreSQL | `localhost:5433` (user `postgres`, password `postgres`, database `mini_erp_crm`) |
+
+Sign in with `admin@fundsroom.local` / `Admin@12345`.
+
+> **Under Docker the app is on 8080, not 5173.** Port 5173 is the Vite dev server, and it only
+> exists while `npm run dev` is running — Docker builds the SPA and serves it through nginx on 8080
+> instead. If you have been developing locally, 5173 is the address you are used to, and it will be
+> dead here; that is expected, not a broken container. Plain `http://localhost` with no port serves
+> nothing either, because nothing is published on port 80 — the port is always required.
 
 Details, port overrides and troubleshooting: [docs/DOCKER.md](docs/DOCKER.md). To develop with hot
 reload, use the local setup below instead.
@@ -229,7 +240,11 @@ cd backend && npm run dev      # http://localhost:4000
 cd frontend && npm run dev     # http://localhost:5173
 ```
 
-Open <http://localhost:5173>. You land on the sign-in screen; pick any of the role chips below it to
+Open <http://localhost:5173> — the Vite dev server. This is the local-development address only; the
+Docker stack serves the same app on **8080** instead, because there the SPA is a built bundle behind
+nginx rather than a dev server. Running both at once is fine, and they are independent.
+
+You land on the sign-in screen; pick any of the role chips below it to
 sign in with one click. The dashboard then opens with live counters — customers, follow-ups due,
 low stock, draft challans and this month's dispatches — each one linking to the records behind it.
 
