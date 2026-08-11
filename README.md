@@ -115,7 +115,7 @@ mini-erp-crm/
 │   ├── index.html
 │   ├── nginx.conf                   SPA fallback, caching and security headers
 │   ├── package.json
-│   ├── vercel.json                  SPA rewrite + asset caching for Vercel
+│   ├── vercel.json                  SPA rewrite, caching and security headers
 │   └── vite.config.ts
 ├── docs/
 ├── postman/
@@ -350,12 +350,21 @@ How they are managed:
 ## Deployment
 
 Neon (PostgreSQL) → Render (API) → Vercel (SPA), all on free tiers, **in that order** — each step
-needs a value the previous one produces. The repository carries the configuration:
+needs a value the previous one produces.
+
+> **A static host alone cannot run this.** GitHub Pages — or any file-only host — can serve the built
+> SPA, but not the API and not the database: the Express server is a long-lived process holding a
+> connection pool, and PostgreSQL is a database. Pointed at the repository root, GitHub Pages
+> publishes the rendered `README.md`, which looks like a deployment and is not one; point it at the
+> built SPA instead and you get a sign-in screen where every request fails, which is worse. That is
+> why the API lives on Render. Three providers is the minimum this architecture takes.
+
+The repository carries the configuration:
 
 | File | What it does |
 | --- | --- |
 | [render.yaml](render.yaml) | Render Blueprint: build and start commands, `/api/health` as the health check, and every environment variable, with secrets marked `sync: false` |
-| [frontend/vercel.json](frontend/vercel.json) | Rewrites every path to `index.html` — without it, refreshing `/customers/12` 404s, because the app uses `BrowserRouter` — plus immutable caching for hashed assets |
+| [frontend/vercel.json](frontend/vercel.json) | Rewrites every path to `index.html` — without it, refreshing `/customers/12` 404s, because the app uses `BrowserRouter` — plus immutable caching for hashed assets and the same security headers `nginx.conf` sets |
 | [backend/tsconfig.build.json](backend/tsconfig.build.json) | Keeps the test suite out of `dist/` |
 
 Migrations run from the start command, so a deploy applies its own schema changes; the API verifies
