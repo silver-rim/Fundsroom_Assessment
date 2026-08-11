@@ -2,8 +2,9 @@
 
 > Phase 7 deliverable. 249 automated tests — 231 backend integration tests against a real
 > PostgreSQL database, 18 frontend unit tests — plus the five defects the exercise found and the
-> fixes for them.
-> Related: [ARCHITECTURE.md](./ARCHITECTURE.md) · [API_PLAN.md](./API_PLAN.md) · [SALES_CHALLAN_MODULE.md](./SALES_CHALLAN_MODULE.md)
+> fixes for them. Phase 8 added a third, complementary suite: 144 Postman assertions run against the
+> live API with newman (§1).
+> Related: [ARCHITECTURE.md](./ARCHITECTURE.md) · [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) · [SALES_CHALLAN_MODULE.md](./SALES_CHALLAN_MODULE.md)
 
 ---
 
@@ -24,6 +25,28 @@ not exist, and passes it to the test process as an environment override. The sui
 table between files, so that guard is the difference between a clean run and losing the seed data.
 
 Set `TEST_DATABASE_NAME` if you want a different name.
+
+### The Postman collection is a third suite
+
+Phase 8 added `postman/`, which is 56 requests carrying **144 assertions** over the live API. It is
+not a replacement for the integration tests — it runs against whatever database the server is
+pointed at, and it cannot reach inside a transaction to prove a concurrency property. What it does
+add is an end-to-end check of the *deployed* thing: the same requests a reviewer would send by hand,
+asserting the same contract.
+
+```bash
+npx newman run postman/Mini-ERP-CRM.postman_collection.json \
+  -e postman/Mini-ERP-CRM.postman_environment.json
+```
+
+Against a seeded development database it passes with 0 failures, and passes again on an immediate
+second run — the requests that would otherwise trip a unique constraint generate a timestamped
+mobile number and SKU. Unlike `npm test`, **this one does write to the database you point it at**;
+`npm run db:setup` restores the seed.
+
+Running it also caught two defects in the collection itself before it was committed: the delete
+example was soft-deleting the customer every later folder depended on, and the service-banner
+request was pointed at `{{baseUrl}}` (which already ends in `/api`) rather than the host root.
 
 ---
 

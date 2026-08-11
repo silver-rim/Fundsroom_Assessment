@@ -3,7 +3,8 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 7 — feature-complete and tested. All 26 endpoints implemented, 249 automated tests passing.**
+> **Status: Phase 8 — feature-complete, tested and documented. 249 automated tests passing, plus a
+> 56-request Postman collection covering every endpoint.**
 > Working today: JWT login with four roles and role-based authorization, the customer CRM
 > (search, filters, pagination, follow-up notes), the product/inventory module with an append-only
 > stock ledger and low-stock alerting, sales challans with Draft/Confirmed/Cancelled lifecycle,
@@ -11,7 +12,10 @@ inventory with a full stock-movement ledger, and sales challans with transaction
 > dashboard whose every counter is an aggregate computed live from the tables it describes.
 > Phase 7 added 231 backend integration tests against a real PostgreSQL database — including three
 > concurrency proofs — plus 18 frontend unit tests, and fixed the five defects they found.
-> Remaining: API docs & Postman (Phase 8), deployment (9), final submission README (10).
+> Phase 8 published [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) — every example captured
+> from the running API rather than transcribed from the plan — and a Postman collection whose 144
+> assertions pass with newman.
+> Remaining: deployment (Phase 9), final submission README (10).
 
 ---
 
@@ -73,7 +77,11 @@ mini-erp-crm/
 │   ├── package.json
 │   └── vite.config.ts
 ├── docs/
-├── postman/                         (Phase 8)
+├── postman/
+│   ├── Mini-ERP-CRM.postman_collection.json    9 folders, 56 requests, 144 assertions
+│   ├── Mini-ERP-CRM.postman_environment.json
+│   ├── build-collection.mjs         generates both files — the JSON is not hand-edited
+│   └── README.md
 ├── .env.example                     system-wide variable reference
 ├── .gitignore
 └── README.md
@@ -174,6 +182,22 @@ You can also verify the API directly:
 curl http://localhost:4000/api/health
 ```
 
+### Exploring the API
+
+Import `postman/Mini-ERP-CRM.postman_collection.json` and its environment file, run
+**Auth → Login (admin)**, and the rest of the collection is authenticated automatically. The
+**Workflow (end-to-end)** folder walks the whole story — customer → product → challan → confirm →
+stock falls → ledger explains why — in eight requests. See [postman/README.md](postman/README.md).
+
+Or run it headless:
+
+```bash
+npx newman run postman/Mini-ERP-CRM.postman_collection.json \
+  -e postman/Mini-ERP-CRM.postman_environment.json
+```
+
+The full endpoint reference is [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md).
+
 ---
 
 ## Development credentials
@@ -262,8 +286,9 @@ How they are managed:
 | [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) | The dashboard (what every counter means and why), frontend architecture, the four-states and URL-as-filter-state conventions, navigation, accessibility, 17 test results |
 | [docs/TESTING.md](docs/TESTING.md) | How to run the suite, why it is integration-first, coverage by area, the concurrency and snapshot proofs, **the five defects found and fixed**, and what is deliberately not covered |
 
-Documents added in later phases:
-`API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
+| [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | The implemented API reference: all 29 routes, every request and response captured from the running API, the full error catalogue, the permission matrix, and an honest diff against the Phase 0 plan |
+
+Documents added in later phases: `DEPLOYMENT.md`.
 
 ---
 
@@ -279,6 +304,6 @@ Documents added in later phases:
 | 5 | Sales challans with transactional stock deduction | ✅ Complete |
 | 6 | Dashboard and complete frontend UX | ✅ Complete |
 | 7 | Testing, validation and bug fixing | ✅ Complete |
-| 8 | API documentation and Postman collection | ⬜ |
+| 8 | API documentation and Postman collection | ✅ Complete |
 | 9 | Deployment | ⬜ |
 | 10 | Final documentation and submission preparation | ⬜ |

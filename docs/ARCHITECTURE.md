@@ -31,7 +31,7 @@ mini-erp-crm/  (repository root)
 ├── backend/          Express + TypeScript API
 ├── frontend/         React + TypeScript SPA
 ├── docs/             all documentation
-├── postman/          Postman collection (Phase 8)
+├── postman/          Postman collection + the script that generates it
 ├── .env.example      documented environment variables (no secrets)
 ├── .gitignore
 └── README.md

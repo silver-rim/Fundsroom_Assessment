@@ -1,8 +1,11 @@
 # API Plan — Mini ERP + CRM Operations Portal
 
 > Phase 0 deliverable: the **planned** REST surface, agreed before any handler is written.
-> The implemented reference (with full request/response examples per endpoint) becomes
-> `docs/API_DOCUMENTATION.md` in Phase 8, alongside the Postman collection.
+> This document is left as written, as the record of that decision.
+>
+> **For the implemented API, read [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** — every request
+> and response captured from the running service, alongside `postman/`. Its §11 lists exactly where
+> the implementation diverged from this plan, and why.
 
 ---
 
