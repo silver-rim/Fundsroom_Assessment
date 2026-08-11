@@ -1,15 +1,20 @@
 # =============================================================================
-# CI + deployment.
+# CI, and the API deployment.
 #
-# The point of this workflow is the GATE: nothing reaches Render or Vercel
-# unless the whole test suite passes first. Both platforms can deploy straight
-# from a push on their own, and by default they do - which means a commit that
-# breaks the build ships before anyone notices. Turning their auto-deploy off
-# and letting this file drive the deploy is what makes the tests load-bearing
-# rather than decorative. See docs/DEPLOYMENT.md for the one-time setup.
+# Every push and pull request runs both test suites. On main, a green run then
+# triggers the Render deploy - so a commit that breaks the API cannot reach
+# production, which is what Render's own auto-deploy would happily allow. Turn
+# that auto-deploy OFF in the Render dashboard, or the ungated path still
+# exists and this gate is decorative.
 #
-# Pull requests run the tests only. Deploys happen on main, and never for a PR
-# from a fork - a fork cannot read the secrets anyway.
+# The SPA is deliberately NOT deployed here. Vercel's own Git integration
+# already deploys it on push, and reproducing that through the CLI bought
+# nothing but breakage. Its tests still run below on every push; they simply
+# do not block that deploy. The frontend build also fails loudly on a type
+# error, on Vercel exactly as it does here, so the exposure is small.
+#
+# Deploys never run for a pull request, including from a fork - a fork cannot
+# read the secrets anyway.
 # =============================================================================
 
 name: CI / Deploy
@@ -170,85 +175,3 @@ jobs:
       - name: Skip notice
         if: ${{ env.DEPLOY_HOOK == '' }}
         run: echo "RENDER_DEPLOY_HOOK_URL is not set - skipping. Add it in Settings -> Secrets."
-
-  # ---------------------------------------------------------------------------
-  deploy-web:
-    name: Deploy SPA (Vercel)
-    runs-on: ubuntu-latest
-    needs: [backend, frontend]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    # VERCEL_ORG_ID / VERCEL_PROJECT_ID are read by the CLI directly, which is
-    # what lets `vercel pull` link the project without an interactive prompt.
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.FRONTEND_NODE_VERSION }}
-
-      # Same reasoning as the Render check. `vercel pull` reports a stray prefix
-      # or newline as "Could not retrieve Project Settings", which reads like a
-      # linking problem rather than a malformed secret.
-      - name: Check secret shape
-        if: ${{ env.VERCEL_TOKEN != '' }}
-        run: |
-          fail=0
-          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
-            eval "value=\$$name"
-            if [ -z "$value" ]; then
-              echo "::error::$name is empty. Add it in Settings -> Secrets and variables -> Actions."
-              fail=1
-            elif [ "$(printf '%s' "$value" | wc -l)" -ne 0 ] \
-              || case "$value" in *' '*|*'='*) true ;; *) false ;; esac; then
-              echo "::error::$name contains a space, '=' or newline, so it is not a bare value."
-              echo "::error::Paste ONLY the value - not '$name = ...' and not quoted."
-              fail=1
-            fi
-          done
-          [ "$fail" -eq 0 ] || exit 1
-
-      - name: Install Vercel CLI
-        if: ${{ env.VERCEL_TOKEN != '' }}
-        run: npm install --global vercel@latest
-
-      # Writing the link file rather than trusting VERCEL_ORG_ID /
-      # VERCEL_PROJECT_ID to be picked up. Those env vars are the documented way
-      # to link a CI checkout, but CLI 58 ignores them here and fails with
-      # "Could not retrieve Project Settings" - which reads like a permissions
-      # error and is really an unlinked checkout. This is the same file
-      # `vercel link` writes locally, and it is exactly what the error asks for.
-      - name: Link project
-        if: ${{ env.VERCEL_TOKEN != '' }}
-        run: |
-          mkdir -p .vercel
-          printf '{"projectId":"%s","orgId":"%s"}\n' \
-            "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
-          echo "Linked: $(wc -c < .vercel/project.json) bytes written"
-
-      # `vercel pull` fetches the project settings - including Root Directory
-      # (frontend) and VITE_API_BASE_URL. That matters: VITE_* variables are
-      # compiled into the bundle at build time, so the build must happen with
-      # the production values already in hand.
-      - name: Pull Vercel environment
-        if: ${{ env.VERCEL_TOKEN != '' }}
-        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-
-      - name: Build
-        if: ${{ env.VERCEL_TOKEN != '' }}
-        run: vercel build --prod --token="$VERCEL_TOKEN"
-
-      # --prebuilt uploads what was just built rather than rebuilding on
-      # Vercel, so the artifact that ships is the one CI tested.
-      - name: Deploy
-        if: ${{ env.VERCEL_TOKEN != '' }}
-        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
-
-      - name: Skip notice
-        if: ${{ env.VERCEL_TOKEN == '' }}
-        run: echo "VERCEL_TOKEN is not set - skipping. Add it in Settings -> Secrets."
