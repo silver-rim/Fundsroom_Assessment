@@ -18,6 +18,7 @@ import { env } from '../config/env';
 import { pool, withTransaction } from '../config/db';
 import { hashPassword } from '../utils/password';
 import { logger } from '../utils/logger';
+import * as challanRepository from '../repositories/challan.repository';
 import type { CustomerStatus, CustomerType, Role } from '../types/domain';
 
 /** Returns a YYYY-MM-DD string `days` from today (negative = in the past). */
@@ -274,6 +275,51 @@ const SEED_PRODUCTS: SeedProduct[] = [
   },
 ];
 
+interface SeedChallan {
+  /** Customers are matched on mobile, which is their natural key here. */
+  customerMobile: string;
+  status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED';
+  notes: string | null;
+  items: Array<{ sku: string; quantity: number }>;
+}
+
+/**
+ * One challan in each state, so the module and the dashboard have something to
+ * show before anyone has typed anything.
+ *
+ * The confirmed one draws only on products held well above their alert level.
+ * That is deliberate: the low-stock and out-of-stock figures chosen above are
+ * demo fixtures in their own right, and a seeded dispatch that quietly pushed a
+ * fourth product under its threshold would break them.
+ */
+const SEED_CHALLANS: SeedChallan[] = [
+  {
+    customerMobile: '9876543210', // Sharma Traders
+    status: 'CONFIRMED',
+    notes: 'Delivered to the Ring Road godown. Gate pass signed by the storekeeper.',
+    items: [
+      { sku: 'CW-25-100M', quantity: 10 },
+      { sku: 'MS-6A', quantity: 50 },
+      { sku: 'CG-25', quantity: 200 },
+    ],
+  },
+  {
+    customerMobile: '9812345678', // Nair Electricals
+    status: 'DRAFT',
+    notes: 'Awaiting confirmation of the delivery window before dispatch.',
+    items: [
+      { sku: 'LED-PL-18', quantity: 5 },
+      { sku: 'DB-8W', quantity: 4 },
+    ],
+  },
+  {
+    customerMobile: '9701234567', // Deshmukh Enterprises
+    status: 'CANCELLED',
+    notes: 'Cancelled - customer revised the order before dispatch. No stock was affected.',
+    items: [{ sku: 'PVC-20', quantity: 25 }],
+  },
+];
+
 // -----------------------------------------------------------------------------
 // Seeding steps
 // -----------------------------------------------------------------------------
@@ -402,6 +448,145 @@ async function seedProducts(client: PoolClient, createdBy: number): Promise<void
   logger.info('Products seeded', { created, openingMovements, total: SEED_PRODUCTS.length });
 }
 
+/**
+ * Seeds one challan per lifecycle state.
+ *
+ * Guarded on the table being empty rather than on each challan individually.
+ * Challan numbers come from a sequence, so there is no natural key to conflict
+ * on — and more importantly, confirming deducts stock: a per-row guard that
+ * misfired would deduct a second time and put the ledger permanently at odds
+ * with `current_stock`, which is the one invariant this whole project exists to
+ * protect. All-or-nothing is the only safe shape.
+ *
+ * The line items and totals are written through the same repository functions
+ * the API uses, so the snapshot columns and the derived totals are produced by
+ * the real code rather than a copy of it that could drift.
+ */
+async function seedChallans(
+  client: PoolClient,
+  salesUserId: number,
+  warehouseUserId: number,
+): Promise<void> {
+  const existing = await client.query<{ count: string }>(
+    'SELECT count(*)::text AS count FROM sales_challans',
+  );
+
+  if (Number(existing.rows[0]?.count ?? 0) > 0) {
+    logger.info('Challans seeded', { created: 0, reason: 'challans already exist' });
+    return;
+  }
+
+  const products = await client.query<{
+    id: string;
+    sku: string;
+    name: string;
+    unit_price: string;
+    current_stock: number;
+  }>('SELECT id, sku, name, unit_price, current_stock FROM products');
+  const bySku = new Map(products.rows.map((row) => [row.sku, row]));
+
+  const customers = await client.query<{ id: string; mobile: string }>(
+    'SELECT id, mobile FROM customers WHERE deleted_at IS NULL',
+  );
+  const byMobile = new Map(customers.rows.map((row) => [row.mobile, Number(row.id)]));
+
+  let created = 0;
+  let outMovements = 0;
+
+  for (const seed of SEED_CHALLANS) {
+    const customerId = byMobile.get(seed.customerMobile);
+    if (customerId === undefined) continue;
+
+    const lines = seed.items
+      .map((item) => ({ item, product: bySku.get(item.sku) }))
+      .filter((line): line is { item: (typeof seed.items)[number]; product: NonNullable<typeof line.product> } =>
+        line.product !== undefined,
+      );
+
+    if (lines.length !== seed.items.length) continue;
+
+    const challanNumber = await challanRepository.nextChallanNumber(client);
+    const challanId = await challanRepository.insertChallan(
+      client,
+      challanNumber,
+      customerId,
+      seed.notes,
+      salesUserId,
+    );
+
+    await challanRepository.replaceItems(
+      client,
+      challanId,
+      lines.map(({ item, product }) => ({
+        productId: Number(product.id),
+        productName: product.name,
+        productSku: product.sku,
+        unitPrice: product.unit_price,
+        quantity: item.quantity,
+      })),
+    );
+
+    await challanRepository.recalculateTotals(client, challanId);
+
+    // Backdated so the list is not three rows all stamped the same second.
+    await client.query(
+      "UPDATE sales_challans SET created_at = now() - interval '6 days' WHERE id = $1",
+      [challanId],
+    );
+
+    if (seed.status === 'CONFIRMED') {
+      for (const { item, product } of lines) {
+        const balanceAfter = product.current_stock - item.quantity;
+
+        await client.query('UPDATE products SET current_stock = $1 WHERE id = $2', [
+          balanceAfter,
+          product.id,
+        ]);
+
+        await client.query(
+          `INSERT INTO stock_movements
+             (product_id, movement_type, quantity, reason, balance_after,
+              reference_type, reference_id, created_by)
+           VALUES ($1, 'OUT', $2, $3, $4, 'SALES_CHALLAN', $5, $6)`,
+          [
+            product.id,
+            item.quantity,
+            `Sales challan ${challanNumber}`,
+            balanceAfter,
+            challanId,
+            warehouseUserId,
+          ],
+        );
+
+        outMovements += 1;
+      }
+
+      // Confirmed a couple of hours ago rather than days: the dashboard counts
+      // dispatches by confirmation date within the current month, and a stamp
+      // near "now" keeps that counter non-zero whatever day the seed runs.
+      await client.query(
+        `UPDATE sales_challans
+            SET status = 'CONFIRMED', confirmed_by = $2, confirmed_at = now() - interval '2 hours'
+          WHERE id = $1`,
+        [challanId, warehouseUserId],
+      );
+    }
+
+    if (seed.status === 'CANCELLED') {
+      await client.query(
+        `UPDATE sales_challans
+            SET status = 'CANCELLED', cancelled_by = $2, cancelled_at = now() - interval '5 days'
+          WHERE id = $1`,
+        [challanId, salesUserId],
+      );
+    }
+
+    created += 1;
+  }
+
+  logger.info('Challans seeded', { created, outMovements, total: SEED_CHALLANS.length });
+}
+
 // -----------------------------------------------------------------------------
 // Entry point
 // -----------------------------------------------------------------------------
@@ -425,12 +610,16 @@ async function main(): Promise<void> {
 
       const adminId = userIds.get('ADMIN');
       const warehouseId = userIds.get('WAREHOUSE');
-      if (adminId === undefined || warehouseId === undefined) {
+      const salesId = userIds.get('SALES');
+      if (adminId === undefined || warehouseId === undefined || salesId === undefined) {
         throw new Error('Seed users are missing - cannot attribute seeded records');
       }
 
       await seedCustomers(client, adminId);
       await seedProducts(client, warehouseId);
+      // Last: challans reference customers and products, and confirming one
+      // deducts the stock those products were just given.
+      await seedChallans(client, salesId, warehouseId);
     });
 
     logger.info('Seed complete');

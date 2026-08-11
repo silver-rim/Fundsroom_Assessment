@@ -4,7 +4,7 @@ An internal operations portal for a wholesale / distribution company: customer C
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
 Built as Full Stack System. **Complete** — all four modules, 30 API routes,
-254 automated tests passing, and a Postman collection with 144 assertions over the live API.
+255 automated tests passing, and a Postman collection with 144 assertions over the live API.
 
 > **Reviewing this?** [SUBMISSION.md](SUBMISSION.md) maps every case-study requirement to the code
 > that satisfies it, and has a ten-minute evaluation path. This README is for running it.
@@ -251,8 +251,10 @@ npm run db:setup     # = npm run migrate && npm run seed
 ```
 
 `migrate` applies every pending file in `src/db/migrations/` inside a transaction and records it in
-`schema_migrations`; re-running it is a no-op. `seed` inserts four users, seven customers and ten
-products, and is idempotent — running it twice does not duplicate anything.
+`schema_migrations`; re-running it is a no-op. `seed` inserts four users, seven customers, ten
+products and three challans — one confirmed, one draft, one cancelled — and is idempotent, so
+running it twice does not duplicate anything. The confirmed challan deducts its stock through the
+ledger exactly as the running system would, so the two never disagree.
 
 You can run the two steps separately (`npm run migrate`, `npm run seed`) if you prefer.
 
@@ -335,7 +337,7 @@ retyping credentials.
 | `npm run dev` | Start with hot reload (tsx watch) |
 | `npm run build` | Compile TypeScript to `dist/` and copy the `.sql` migrations across |
 | `npm start` | Run the compiled build (production) |
-| `npm test` | Run the 236 integration tests against an isolated `<database>_test` database |
+| `npm test` | Run the 237 integration tests against an isolated `<database>_test` database |
 | `npm run typecheck` | Type-check without emitting |
 | `npm run migrate` | Apply pending migrations |
 | `npm run seed` | Insert development seed data |

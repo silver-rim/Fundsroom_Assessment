@@ -87,13 +87,16 @@ describe('migrate', () => {
 });
 
 describe('seed', () => {
-  it('populates users, customers and products', async () => {
+  it('populates users, customers, products and challans', async () => {
     const result = runScript('seed.ts');
     assert.equal(result.status, 0, result.stderr);
 
     assert.equal(await countOf('users'), 4);
     assert.equal(await countOf('customers'), 7);
     assert.equal(await countOf('products'), 10);
+    // One challan per lifecycle state, 3 + 2 + 1 line items between them.
+    assert.equal(await countOf('sales_challans'), 3);
+    assert.equal(await countOf('sales_challan_items'), 6);
   });
 
   it('creates opening stock through the ledger, so the two reconcile', async () => {
@@ -118,8 +121,28 @@ describe('seed', () => {
     assert.equal(await countOf('users'), 4);
     assert.equal(await countOf('customers'), 7);
     assert.equal(await countOf('products'), 10);
-    // The critical one: a second run must not add a second opening-stock entry.
-    assert.equal(await countOf('stock_movements'), 9);
+    assert.equal(await countOf('sales_challans'), 3);
+    assert.equal(await countOf('sales_challan_items'), 6);
+    // The critical one: 9 opening-stock entries plus the 3 OUT rows written by
+    // the seeded confirmation, and not one more. A second run that re-confirmed
+    // that challan would deduct its stock twice and leave current_stock
+    // permanently below the ledger — the one thing this project must not do.
+    assert.equal(await countOf('stock_movements'), 12);
+  });
+
+  it('leaves stock and the ledger reconciled after a second run', async () => {
+    const mismatched = await query<{ id: string }>(
+      `SELECT p.id
+         FROM products p
+         LEFT JOIN (
+           SELECT product_id,
+                  sum(CASE WHEN movement_type = 'IN' THEN quantity ELSE -quantity END) AS total
+             FROM stock_movements GROUP BY product_id
+         ) m ON m.product_id = p.id
+        WHERE p.current_stock <> COALESCE(m.total, 0)`,
+    );
+
+    assert.equal(mismatched.rowCount, 0, 'a re-run must not have deducted stock again');
   });
 
   it('stores only bcrypt hashes, never a plaintext password', async () => {
