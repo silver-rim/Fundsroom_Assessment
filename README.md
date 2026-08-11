@@ -9,6 +9,34 @@ Built as Full Stack System. **Complete** — all four modules, 29 API routes,
 > **Reviewing this?** [SUBMISSION.md](SUBMISSION.md) maps every case-study requirement to the code
 > that satisfies it, and has a ten-minute evaluation path. This README is for running it.
 
+---
+
+## Live demo
+
+| | |
+| --- | --- |
+| **App** | **<https://fundsroom-assessment.vercel.app>** |
+| API health | <https://fundsroom-assessment.onrender.com/api/health> |
+
+Sign in with any role — each is a one-click chip on the sign-in screen:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@fundsroom.local` | `Admin@12345` |
+| Sales | `sales@fundsroom.local` | `Sales@12345` |
+| Warehouse | `warehouse@fundsroom.local` | `Warehouse@12345` |
+| Accounts | `accounts@fundsroom.local` | `Accounts@12345` |
+
+> **The first request takes up to a minute.** The API is on Render's free tier, which sleeps after
+> ~15 minutes of inactivity and cold-starts on the next call. The sign-in screen appears instantly —
+> it is served from a CDN — but the first sign-in waits for the API to wake. It is quick after that.
+> If you would rather not wait blind, open the health link above first and let it return before
+> signing in.
+
+Hosted on Vercel (SPA) → Render (API) → Neon (PostgreSQL), all free tiers. These are throwaway demo
+accounts on a demo database, seeded with fabricated data — see
+[Development credentials](#development-credentials).
+
 **What it does.** Four employee roles sign in and share one operational picture: the customers they
 sell to, the products in the warehouse, every stock movement, and the sales challans raised against
 customers. The guarantee the whole design serves is a narrow one —
@@ -240,7 +268,7 @@ cd backend && npm run dev      # http://localhost:4000
 cd frontend && npm run dev     # http://localhost:5173
 ```
 
-Open <https://fundsroom-assessment.vercel.app/login> — the Vite dev server. This is the local-development address only; the
+Open <http://localhost:5173> — the Vite dev server. This is the local-development address only; the
 Docker stack serves the same app on **8080** instead, because there the SPA is a built bundle behind
 nginx rather than a dev server. Running both at once is fine, and they are independent.
 
