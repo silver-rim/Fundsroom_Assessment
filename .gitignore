@@ -47,3 +47,12 @@ desktop.ini
 *.dump
 *.sqlite
 tmp/
+
+# ---- Vercel CLI ----
+# `vercel link` writes .vercel/project.json with this checkout's org and
+# project ids. Machine-local linkage, not project configuration - the
+# deployment settings that matter live in frontend/vercel.json.
+.vercel/
+
+.vercel
+.env*
