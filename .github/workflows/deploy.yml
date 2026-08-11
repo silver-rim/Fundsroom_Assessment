@@ -20,11 +20,18 @@ on:
   pull_request:
     branches: [main]
 
-# Node 20: the same major the API runs on Render (NODE_VERSION there) and the
-# same one the Docker images build with. CI is not the place to discover that a
-# newer runtime behaves differently.
+# The two halves deliberately run on different majors, because they are deployed
+# to different places and CI should test what actually ships.
 env:
-  NODE_VERSION: '20'
+  # The API runs on Node 20 on Render (NODE_VERSION there) and builds on
+  # node:20-alpine in Docker. CI is not the place to discover that a newer
+  # runtime behaves differently.
+  BACKEND_NODE_VERSION: '20'
+  # The SPA never touches Render - Vercel builds it, and it is developed on 22.
+  # It must not drop to 20: `npm test` passes a glob to `node --test`, and glob
+  # support landed in Node 22. On 20 the runner reads "src/**/*.test.ts" as a
+  # literal filename and fails before running a single test.
+  FRONTEND_NODE_VERSION: '22'
 
 # A second push while a deploy is mid-flight should queue, not race it. Deploys
 # are not cancelled in progress: a half-applied migration is worse than a wait.
@@ -73,7 +80,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ env.BACKEND_NODE_VERSION }}
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -103,7 +110,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ env.FRONTEND_NODE_VERSION }}
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
@@ -169,7 +176,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: ${{ env.FRONTEND_NODE_VERSION }}
 
       - name: Install Vercel CLI
         if: ${{ env.VERCEL_TOKEN != '' }}
