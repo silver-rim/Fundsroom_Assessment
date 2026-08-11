@@ -3,7 +3,7 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-Built as a 48-hour Full Stack Developer case study. **Complete** — all four modules, 29 API routes,
+Built as Full Stack System. **Complete** — all four modules, 29 API routes,
 249 automated tests passing, and a Postman collection with 144 assertions over the live API.
 
 > **Reviewing this?** [SUBMISSION.md](SUBMISSION.md) maps every case-study requirement to the code
@@ -45,19 +45,22 @@ Accounts without retyping credentials — and see the permission differences imm
 ![Operations dashboard with live counters and recent activity](Images/dashboard.png)
 
 *The dashboard. Every counter is an aggregate computed live from the tables it describes — nothing
-here is cached or denormalised — and each panel links to the records behind it.*
+here is cached or denormalised — and each panel links to the records behind it. "Needs reordering"
+shows current stock against the alert threshold; "Dispatched this month" is measured on the
+confirmation date, so a challan drafted last month and confirmed this month counts here.*
 
-![Sales challan detail showing snapshot line items](Images/challan.png)
+![Sales challan list with search, status and date filters](Images/sales_challan.png)
 
-*A confirmed challan. The line items show the product name, SKU and unit price **as they were at the
-moment of sale**: they are snapshot columns, so renaming or repricing the product later cannot
-rewrite a document that has already been dispatched.*
+*Sales challans. Numbers are issued server-side as `CH-YYYY-NNNNNN`, and the status column shows the
+lifecycle in practice — confirmed documents have dispatched goods and deducted stock; cancelled ones
+never touched it. Filters are held in the URL, so a filtered list is a shareable link.*
 
-![Stock movement ledger showing an OUT entry referencing a challan](Images/ledger.png)
+![Inventory ledger showing IN and OUT movements with balances and sources](Images/stock_ledger.png)
 
-*The stock ledger. Append-only — no edit, no delete. The `OUT` rows written by confirming a challan
-carry a reference back to it, so every unit that left the warehouse can be traced to the document
-that moved it.*
+*The stock ledger — "every stock change, appended and never edited". Each row carries the balance
+**after** it, so the stock level at any past moment is readable straight off the row. The `Source`
+column separates manual adjustments ("Damaged during handling") from the `OUT` rows written
+automatically by confirming a challan, each naming the challan that caused it.*
 
 ---
 
