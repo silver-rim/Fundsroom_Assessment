@@ -16,7 +16,7 @@
 | Environment | Base URL |
 | --- | --- |
 | Local | `http://localhost:4000/api` |
-| Production | `https://<render-service>.onrender.com/api` (Phase 9) |
+| Production | `https://<render-service>.onrender.com/api` — see [DEPLOYMENT.md](./DEPLOYMENT.md) |
 
 Two endpoints are public — `GET /api/health` and `POST /api/auth/login`. Everything else needs
 `Authorization: Bearer <token>`.
@@ -915,4 +915,5 @@ unedited as a record of that decision; this section is the honest diff.
 
 ---
 
-*Phase 8 of 10. Deployment (`docs/DEPLOYMENT.md`) is Phase 9.*
+*Phase 8 deliverable. Deploying this API: [DEPLOYMENT.md](./DEPLOYMENT.md). Exercising it:
+[postman/](../postman/).*

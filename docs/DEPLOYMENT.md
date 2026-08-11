@@ -390,4 +390,4 @@ data:
 
 ---
 
-*Phase 9 of 10. The final submission README is Phase 10.*
+*Phase 9 deliverable. The reviewer-facing summary is [SUBMISSION.md](../SUBMISSION.md).*

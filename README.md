@@ -3,21 +3,22 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 9 — feature-complete, tested, documented and deployable. 249 automated tests
-> passing, plus a 56-request Postman collection covering every endpoint.**
-> Working today: JWT login with four roles and role-based authorization, the customer CRM
-> (search, filters, pagination, follow-up notes), the product/inventory module with an append-only
-> stock ledger and low-stock alerting, sales challans with Draft/Confirmed/Cancelled lifecycle,
-> all-or-nothing transactional stock deduction and immutable product snapshots, and an operations
-> dashboard whose every counter is an aggregate computed live from the tables it describes.
-> Phase 7 added 231 backend integration tests against a real PostgreSQL database — including three
-> concurrency proofs — plus 18 frontend unit tests, and fixed the five defects they found.
-> Phase 8 published [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) — every example captured
-> from the running API rather than transcribed from the plan — and a Postman collection whose 144
-> assertions pass with newman.
-> Phase 9 added the deployment path: `render.yaml`, `frontend/vercel.json` and
-> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), with both production builds verified locally.
-> Remaining: the final submission README (Phase 10).
+Built as a 48-hour Full Stack Developer case study. **Complete** — all four modules, 29 API routes,
+249 automated tests passing, and a Postman collection with 144 assertions over the live API.
+
+> **Reviewing this?** [SUBMISSION.md](SUBMISSION.md) maps every case-study requirement to the code
+> that satisfies it, and has a ten-minute evaluation path. This README is for running it.
+
+**What it does.** Four employee roles sign in and share one operational picture: the customers they
+sell to, the products in the warehouse, every stock movement, and the sales challans raised against
+customers. The guarantee the whole design serves is a narrow one —
+
+> **Recorded stock and the movement log can never disagree, and stock can never go negative.**
+
+Everything else follows from it: stock changes only through a logged movement, confirming a challan
+deducts every line in one all-or-nothing transaction, challan lines carry a frozen snapshot of what
+was sold at what price, and products are deactivated rather than deleted so old documents still read
+correctly.
 
 ---
 
@@ -27,6 +28,36 @@ inventory with a full stock-movement ledger, and sales challans with transaction
 **Frontend** React 18 · TypeScript · Vite 6 · React Router · axios · plain CSS with design tokens  
 **Database** PostgreSQL 16/17  
 **Deployment** Vercel (frontend) · Render (backend) · Neon (PostgreSQL) — all free tiers  
+
+No ORM: the SQL is hand-written, because the interesting part of this project is a transaction with
+explicit row locks in a deliberate order, and that is exactly what an ORM makes harder to read. The
+reasoning is in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+---
+
+## Screenshots
+
+![Sign-in screen with one-click demo accounts for all four roles](Images/login.png)
+
+*Sign-in. Each role is a one-click chip, so a reviewer can switch between Admin, Sales, Warehouse and
+Accounts without retyping credentials — and see the permission differences immediately.*
+
+![Operations dashboard with live counters and recent activity](Images/dashboard.png)
+
+*The dashboard. Every counter is an aggregate computed live from the tables it describes — nothing
+here is cached or denormalised — and each panel links to the records behind it.*
+
+![Sales challan detail showing snapshot line items](Images/challan.png)
+
+*A confirmed challan. The line items show the product name, SKU and unit price **as they were at the
+moment of sale**: they are snapshot columns, so renaming or repricing the product later cannot
+rewrite a document that has already been dispatched.*
+
+![Stock movement ledger showing an OUT entry referencing a challan](Images/ledger.png)
+
+*The stock ledger. Append-only — no edit, no delete. The `OUT` rows written by confirming a challan
+carry a reference back to it, so every unit that left the warehouse can be traced to the document
+that moved it.*
 
 ---
 
@@ -308,17 +339,21 @@ Full walkthrough, per-platform variable tables, verification commands and a trou
 | [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) | What the portal is, who uses it, the business problem, modules, workflows, assumptions, MVP scope, future work |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System / frontend / backend / database architecture, auth flow, request flow, error handling, role permission matrix |
 | [docs/DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) | Every table, column, key, constraint and index, plus the reference DDL and the seed-data plan |
-| [docs/API_PLAN.md](docs/API_PLAN.md) | All 26 planned REST endpoints, conventions, response envelope, error codes, validation rules |
+| [docs/API_PLAN.md](docs/API_PLAN.md) | The Phase 0 plan: 26 planned endpoints, conventions, response envelope, error codes, validation rules |
 | [docs/AUTHENTICATION.md](docs/AUTHENTICATION.md) | JWT design, login flow, password storage, **permission matrix**, security decisions and limitations, 21 test results |
 | [docs/CRM_MODULE.md](docs/CRM_MODULE.md) | Customer workflow, data model, endpoints, validation, role access, frontend behaviour, 31 test results |
 | [docs/INVENTORY_MODULE.md](docs/INVENTORY_MODULE.md) | Product master, the stock-only-moves-through-the-ledger rule, transaction & row-locking design, low-stock logic, 25 test results plus a concurrency proof |
 | [docs/SALES_CHALLAN_MODULE.md](docs/SALES_CHALLAN_MODULE.md) | Challan lifecycle, draft vs confirmed, the two-pass transactional stock deduction, **product snapshot**, challan numbering, 41 test results plus a concurrency proof |
 | [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) | The dashboard (what every counter means and why), frontend architecture, the four-states and URL-as-filter-state conventions, navigation, accessibility, 17 test results |
 | [docs/TESTING.md](docs/TESTING.md) | How to run the suite, why it is integration-first, coverage by area, the concurrency and snapshot proofs, **the five defects found and fixed**, and what is deliberately not covered |
-
 | [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | The implemented API reference: all 29 routes, every request and response captured from the running API, the full error catalogue, the permission matrix, and an honest diff against the Phase 0 plan |
-
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Putting it online on free tiers: Neon → Render → Vercel in order, why that split, every environment variable per platform, how to verify the deployment end to end, and a troubleshooting table for the failures that actually happen |
+| [postman/README.md](postman/README.md) | The collection folder by folder, how to re-run it, and how it is regenerated |
+| [SUBMISSION.md](SUBMISSION.md) | **For reviewers** — requirement-to-code map, a ten-minute evaluation path, the decisions taken and what is deliberately absent |
+
+`docs/API_PLAN.md` is the Phase 0 *plan*, left unedited as a record of what was agreed before any
+handler was written. For what was actually built, read `docs/API_DOCUMENTATION.md`; its §11 lists
+every divergence between the two and why.
 
 ---
 
@@ -336,4 +371,6 @@ Full walkthrough, per-platform variable tables, verification commands and a trou
 | 7 | Testing, validation and bug fixing | ✅ Complete |
 | 8 | API documentation and Postman collection | ✅ Complete |
 | 9 | Deployment | ✅ Complete |
-| 10 | Final documentation and submission preparation | ⬜ |
+| 10 | Final documentation and submission preparation | ✅ Complete |
+
+Each phase was committed separately, so the history reads as a build rather than a single dump.

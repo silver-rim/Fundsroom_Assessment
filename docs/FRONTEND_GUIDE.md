@@ -17,7 +17,9 @@
 | Frontend | The top bar names the current screen instead of repeating the product name |
 | Frontend | A "Follow-ups due" filter on the customer list, which the dashboard tile links into |
 
-With this the API surface is complete: **26 of 26 endpoints implemented.**
+With this the API surface is complete: **all 26 planned endpoints implemented** (29 routes in total
+once the three added along the way are counted — see
+[API_DOCUMENTATION.md](./API_DOCUMENTATION.md) §11).
 
 ---
 
@@ -109,7 +111,7 @@ src/
 
 The dependency direction is one-way: `pages → hooks/api → client`. A page never imports axios, never
 reads `localStorage`, and never builds a URL by hand. That is why the session-expiry rule — a 401
-clears the token and bounces to `/login` — lives in one interceptor and applies to all 26 endpoints
+clears the token and bounces to `/login` — lives in one interceptor and applies to every endpoint
 without a single page knowing about it.
 
 **State lives where it is used.** Only authentication is global. Everything else is fetched per
