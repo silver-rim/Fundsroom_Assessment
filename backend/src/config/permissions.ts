@@ -44,5 +44,13 @@ export const CHALLAN_WRITE: readonly Role[] = ['ADMIN', 'SALES'];
 export const CHALLAN_CONFIRM: readonly Role[] = ['ADMIN', 'SALES', 'WAREHOUSE'];
 export const CHALLAN_CANCEL: readonly Role[] = ['ADMIN', 'SALES'];
 
+// ---- Dashboard ---------------------------------------------------------------
+/**
+ * Open to every role. The dashboard aggregates data each role can already read
+ * through the module screens, so restricting it would hide nothing — it would
+ * only make the landing page useless for Warehouse and Accounts.
+ */
+export const DASHBOARD_READ: readonly Role[] = ROLES;
+
 // ---- User administration -----------------------------------------------------
 export const USER_READ: readonly Role[] = ['ADMIN'];

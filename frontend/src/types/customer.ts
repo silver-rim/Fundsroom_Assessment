@@ -74,6 +74,8 @@ export interface CustomerListParams {
   search?: string;
   status?: CustomerStatus | '';
   customerType?: CustomerType | '';
+  /** 'YYYY-MM-DD'. Keeps only customers whose follow-up falls on or before it. */
+  followUpBefore?: string;
   sortBy?: 'createdAt' | 'name' | 'businessName' | 'followUpDate';
   sortOrder?: 'asc' | 'desc';
 }

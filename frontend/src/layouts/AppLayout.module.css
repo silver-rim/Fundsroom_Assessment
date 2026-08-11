@@ -39,6 +39,12 @@
 .nav {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
 }
 
@@ -73,13 +79,6 @@
 
 .navLinkActive:hover {
   background-color: var(--color-primary-600);
-}
-
-.navPending {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-sm);
-  color: var(--color-neutral-600);
-  cursor: default;
 }
 
 /* ---- Topbar ------------------------------------------------------------- */
@@ -165,13 +164,24 @@
     overflow-x: auto;
   }
 
+  /* The sections are a vertical-reading aid; on a horizontal bar they would
+     only cost width, so the groups flatten into one scrolling row. */
   .nav {
+    flex-direction: row;
+    gap: var(--space-1);
+  }
+
+  .navGroup {
     flex-direction: row;
     gap: var(--space-1);
   }
 
   .navSection {
     display: none;
+  }
+
+  .navLink {
+    white-space: nowrap;
   }
 
   .brandTag {

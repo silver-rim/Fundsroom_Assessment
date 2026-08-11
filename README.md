@@ -3,13 +3,14 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 5 — all core modules complete.**
+> **Status: Phase 6 — feature-complete. All 26 planned endpoints are implemented.**
 > Working today: JWT login with four roles and role-based authorization, the customer CRM
 > (search, filters, pagination, follow-up notes), the product/inventory module with an append-only
-> stock ledger and low-stock alerting, and sales challans with Draft/Confirmed/Cancelled lifecycle,
-> all-or-nothing transactional stock deduction and immutable product snapshots.
-> Remaining: dashboard and UX polish (Phase 6), system testing (7), API docs & Postman (8),
-> deployment (9), final submission README (10).
+> stock ledger and low-stock alerting, sales challans with Draft/Confirmed/Cancelled lifecycle,
+> all-or-nothing transactional stock deduction and immutable product snapshots, and an operations
+> dashboard whose every counter is an aggregate computed live from the tables it describes.
+> Remaining: system testing (Phase 7), API docs & Postman (8), deployment (9),
+> final submission README (10).
 
 ---
 
@@ -29,16 +30,20 @@ mini-erp-crm/
 ├── backend/
 │   ├── scripts/copy-assets.mjs      copies .sql migrations into dist/ after tsc
 │   ├── src/
-│   │   ├── config/                  env.ts (validated config), db.ts (pool + withTransaction)
+│   │   ├── config/                  env.ts (validated config), db.ts (pool + withTransaction),
+│   │   │                            permissions.ts (the role matrix, in executable form)
 │   │   ├── controllers/             HTTP layer — no business logic
-│   │   ├── middleware/              errorHandler, notFound  (+ auth, validate from Phase 2)
+│   │   ├── services/                business rules and transactions
+│   │   ├── repositories/            all SQL, one module per table
+│   │   ├── validators/              Zod schemas; the inferred type IS the DTO
+│   │   ├── middleware/              authenticate, authorize, validate, errorHandler, notFound
 │   │   ├── routes/                  route table, mounted under /api
 │   │   ├── db/
 │   │   │   ├── migrations/          numbered, forward-only .sql files
 │   │   │   ├── migrate.ts           migration runner
 │   │   │   └── seed.ts              idempotent development seed
 │   │   ├── types/                   domain enums shared across layers
-│   │   ├── utils/                   AppError, httpResponse, logger, password, asyncHandler
+│   │   ├── utils/                   AppError, httpResponse, logger, password, jwt, pagination
 │   │   ├── app.ts                   express assembly
 │   │   └── server.ts                entry point, graceful shutdown
 │   ├── .env.example
@@ -47,11 +52,16 @@ mini-erp-crm/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/                     axios instance + one module per resource
+│   │   ├── components/ui/           Button, Field, Pagination, StatTile, States
 │   │   ├── config/                  env.ts — the only reader of import.meta.env
-│   │   ├── hooks/                   useApi (loading / error / data)
+│   │   ├── context/                 AuthContext — the app's only global state
+│   │   ├── hooks/                   useApi (loading / error / data), useDebounce
+│   │   ├── layouts/                 AppLayout — sidebar, top bar, content outlet
 │   │   ├── pages/                   one folder per screen
+│   │   ├── routes/                  ProtectedRoute, RoleRoute
 │   │   ├── styles/                  tokens.css (design tokens), global.css
 │   │   ├── types/                   API contract types
+│   │   ├── utils/                   format.ts — dates and money, in one place
 │   │   ├── App.tsx                  route table
 │   │   └── main.tsx
 │   ├── .env.example
@@ -147,8 +157,12 @@ cd backend && npm run dev      # http://localhost:4000
 cd frontend && npm run dev     # http://localhost:5173
 ```
 
-Open <http://localhost:5173>. The System Status screen should show **Operational**, with the
-database connected. If it cannot reach the API it tells you exactly what to check.
+Open <http://localhost:5173>. You land on the sign-in screen; pick any of the role chips below it to
+sign in with one click. The dashboard then opens with live counters — customers, follow-ups due,
+low stock, draft challans and this month's dispatches — each one linking to the records behind it.
+
+If anything looks wrong, **System status** in the sidebar shows whether the API and database are
+reachable and tells you exactly what to check.
 
 You can also verify the API directly:
 
@@ -239,9 +253,10 @@ How they are managed:
 | [docs/CRM_MODULE.md](docs/CRM_MODULE.md) | Customer workflow, data model, endpoints, validation, role access, frontend behaviour, 31 test results |
 | [docs/INVENTORY_MODULE.md](docs/INVENTORY_MODULE.md) | Product master, the stock-only-moves-through-the-ledger rule, transaction & row-locking design, low-stock logic, 25 test results plus a concurrency proof |
 | [docs/SALES_CHALLAN_MODULE.md](docs/SALES_CHALLAN_MODULE.md) | Challan lifecycle, draft vs confirmed, the two-pass transactional stock deduction, **product snapshot**, challan numbering, 41 test results plus a concurrency proof |
+| [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) | The dashboard (what every counter means and why), frontend architecture, the four-states and URL-as-filter-state conventions, navigation, accessibility, 17 test results |
 
 Documents added in later phases:
-`SALES_CHALLAN_MODULE.md`, `FRONTEND_GUIDE.md`, `TESTING.md`, `API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
+`TESTING.md`, `API_DOCUMENTATION.md`, `DEPLOYMENT.md`.
 
 ---
 
@@ -255,7 +270,7 @@ Documents added in later phases:
 | 3 | Customer CRM module | ✅ Complete |
 | 4 | Products, inventory and stock movements | ✅ Complete |
 | 5 | Sales challans with transactional stock deduction | ✅ Complete |
-| 6 | Dashboard and complete frontend UX | ⬜ |
+| 6 | Dashboard and complete frontend UX | ✅ Complete |
 | 7 | Testing, validation and bug fixing | ⬜ |
 | 8 | API documentation and Postman collection | ⬜ |
 | 9 | Deployment | ⬜ |

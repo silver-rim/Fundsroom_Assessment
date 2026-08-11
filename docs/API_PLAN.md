@@ -361,13 +361,20 @@ Optional `{ "reason": "Customer withdrew the order" }`. Only legal from `DRAFT`;
     "recentChallans":   [ { "id": 31, "challanNumber": "CH-2026-000042",
                             "customerName": "Sharma Traders", "status": "CONFIRMED",
                             "totalAmount": "9400.00", "createdAt": "2026-08-10T09:20:00.000Z" } ],
-    "recentMovements":  [ { "id": 88, "productName": "Copper Wire 2.5mm", "movementType": "OUT",
-                            "quantity": 3, "createdAt": "2026-08-10T09:14:22.104Z" } ]
+    "recentMovements":  [ { "id": 88, "productId": 7, "productName": "Copper Wire 2.5mm",
+                            "movementType": "OUT", "quantity": 3, "balanceAfter": 2,
+                            "createdAt": "2026-08-10T09:14:22.104Z" } ]
   } }
 ```
 
 Every number is a real aggregate query. `followUpsDue` counts non-deleted customers whose
-`follow_up_date <= CURRENT_DATE`. There are no decorative statistics.
+`follow_up_date <= CURRENT_DATE`. There are no decorative statistics. Each of the three lists
+carries at most 5 rows — the dashboard is a glance, and every panel links to the full list.
+
+`outOfStock` is a **subset** of `lowStock`, not a separate population, and both count active
+products only. `confirmedThisMonth` / `valueThisMonth` are measured on `confirmed_at`, so a challan
+drafted last month and confirmed this month belongs to this month. Every field's exact definition
+is tabulated in [FRONTEND_GUIDE.md](./FRONTEND_GUIDE.md) §2.2.
 
 ---
 

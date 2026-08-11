@@ -192,21 +192,22 @@ These are decisions the case study leaves open. They are implemented as stated a
 
 ## 9. MVP scope (what Phases 1–10 will actually deliver)
 
-**In scope — mandatory:**
+**In scope — mandatory** (ticked as of Phase 6, when the feature set became complete):
 
-- [ ] JWT login, four roles, backend-enforced role authorization on every protected route
-- [ ] Customer CRM: create, edit, search, filter, paginate, detail page, follow-up note history
-- [ ] Product master: create, edit, search, filter, paginate, detail page, low-stock indicator
-- [ ] Stock movements: manual IN / OUT with mandatory reason, full audit log per product
-- [ ] Negative stock prevention at the database level *and* the service level
-- [ ] Sales challans: multi-line creation, auto challan number, Draft / Confirmed / Cancelled
-- [ ] Transactional stock deduction on confirm, all-or-nothing, with a clear insufficient-stock error
-- [ ] Product snapshot (name, SKU, unit price, quantity) stored on every challan line
-- [ ] Dashboard with counters derived from real queries
-- [ ] Responsive admin-style React UI with loading / empty / error / success states
-- [ ] Consistent REST envelope, correct HTTP status codes, no stack traces leaked to clients
-- [ ] Migrations + seed data + `.env.example`
+- [x] JWT login, four roles, backend-enforced role authorization on every protected route
+- [x] Customer CRM: create, edit, search, filter, paginate, detail page, follow-up note history
+- [x] Product master: create, edit, search, filter, paginate, detail page, low-stock indicator
+- [x] Stock movements: manual IN / OUT with mandatory reason, full audit log per product
+- [x] Negative stock prevention at the database level *and* the service level
+- [x] Sales challans: multi-line creation, auto challan number, Draft / Confirmed / Cancelled
+- [x] Transactional stock deduction on confirm, all-or-nothing, with a clear insufficient-stock error
+- [x] Product snapshot (name, SKU, unit price, quantity) stored on every challan line
+- [x] Dashboard with counters derived from real queries
+- [x] Responsive admin-style React UI with loading / empty / error / success states
+- [x] Consistent REST envelope, correct HTTP status codes, no stack traces leaked to clients
+- [x] Migrations + seed data + `.env.example`
 - [ ] Full documentation set, Postman collection, deployment, test credentials for all four roles
+      — test credentials and the module docs exist; Postman (Phase 8) and deployment (Phase 9) remain
 
 **Explicitly out of scope for the MVP:** purchase orders, invoices & tax computation, payments /
 outstanding balances, returns & credit notes, per-location stock, product images, reports &

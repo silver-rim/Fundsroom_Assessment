@@ -43,6 +43,32 @@
   background-color: var(--color-surface);
 }
 
+/* A pressed-state toggle rather than a checkbox: it is a one-click view the
+   dashboard also links to, and aria-pressed carries the state to screen readers. */
+.toggle {
+  appearance: none;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.toggle:hover {
+  border-color: var(--color-primary-600);
+  color: var(--color-primary-700);
+}
+
+.toggleOn,
+.toggleOn:hover {
+  background-color: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+  color: var(--color-text-inverse);
+}
+
 .clear {
   appearance: none;
   background: none;

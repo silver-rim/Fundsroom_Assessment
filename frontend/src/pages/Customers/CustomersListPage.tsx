@@ -13,7 +13,7 @@ import { useAuth } from '../../context/AuthContext';
 import { LinkButton } from '../../components/ui/Button';
 import { EmptyState, ErrorState, InlineSpinner } from '../../components/ui/States';
 import Pagination from '../../components/ui/Pagination';
-import { formatDate, isOverdue } from '../../utils/format';
+import { formatDate, isOverdue, todayIso } from '../../utils/format';
 import {
   CUSTOMER_STATUSES,
   CUSTOMER_STATUS_BADGE,
@@ -34,6 +34,8 @@ export default function CustomersListPage(): JSX.Element {
   const search = searchParams.get('search') ?? '';
   const status = (searchParams.get('status') ?? '') as CustomerStatus | '';
   const customerType = (searchParams.get('customerType') ?? '') as CustomerType | '';
+  // Set by the "Follow-ups due" toggle and by the dashboard tile that links here.
+  const followUpBefore = searchParams.get('followUpBefore') ?? '';
 
   // Debounced so typing does not fire a request per keystroke.
   const debouncedSearch = useDebounce(search);
@@ -46,10 +48,13 @@ export default function CustomersListPage(): JSX.Element {
         search: debouncedSearch,
         status,
         customerType,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
+        followUpBefore,
+        // When the user is working the due list, the most overdue customer is
+        // the one they want first — newest-first would bury it.
+        sortBy: followUpBefore ? 'followUpDate' : 'createdAt',
+        sortOrder: followUpBefore ? 'asc' : 'desc',
       }),
-    [page, debouncedSearch, status, customerType],
+    [page, debouncedSearch, status, customerType, followUpBefore],
   );
 
   const { data, error, isLoading, refetch } = useApi(request, [
@@ -57,6 +62,7 @@ export default function CustomersListPage(): JSX.Element {
     debouncedSearch,
     status,
     customerType,
+    followUpBefore,
   ]);
 
   /** Writes a filter into the URL. Any filter change resets to page 1. */
@@ -74,7 +80,7 @@ export default function CustomersListPage(): JSX.Element {
     [searchParams, setSearchParams],
   );
 
-  const hasFilters = Boolean(search || status || customerType);
+  const hasFilters = Boolean(search || status || customerType || followUpBefore);
 
   const content = useMemo(() => {
     if (isLoading) return <InlineSpinner label="Loading customers…" />;
@@ -83,11 +89,19 @@ export default function CustomersListPage(): JSX.Element {
     if (!data || data.items.length === 0) {
       return (
         <EmptyState
-          title={hasFilters ? 'No customers match those filters' : 'No customers yet'}
+          title={
+            followUpBefore
+              ? 'No follow-ups are due'
+              : hasFilters
+                ? 'No customers match those filters'
+                : 'No customers yet'
+          }
           message={
-            hasFilters
-              ? 'Try a different search term, or clear the filters to see everyone.'
-              : 'Add your first customer to start tracking leads and follow-ups.'
+            followUpBefore
+              ? 'Nothing is scheduled for today or overdue. Clear the filter to see everyone.'
+              : hasFilters
+                ? 'Try a different search term, or clear the filters to see everyone.'
+                : 'Add your first customer to start tracking leads and follow-ups.'
           }
           action={canEdit && !hasFilters ? <LinkButton to="/customers/new">Add customer</LinkButton> : undefined}
         />
@@ -152,7 +166,7 @@ export default function CustomersListPage(): JSX.Element {
         />
       </>
     );
-  }, [data, error, isLoading, refetch, hasFilters, canEdit, updateParam]);
+  }, [data, error, isLoading, refetch, hasFilters, followUpBefore, canEdit, updateParam]);
 
   return (
     <>
@@ -204,6 +218,15 @@ export default function CustomersListPage(): JSX.Element {
             </option>
           ))}
         </select>
+
+        <button
+          type="button"
+          className={`${styles.toggle} ${followUpBefore ? styles.toggleOn : ''}`}
+          aria-pressed={Boolean(followUpBefore)}
+          onClick={() => updateParam('followUpBefore', followUpBefore ? '' : todayIso())}
+        >
+          Follow-ups due
+        </button>
 
         {hasFilters && (
           <button

@@ -42,11 +42,15 @@ export function formatDateTime(value: string | null | undefined): string {
   });
 }
 
+/** Today as 'YYYY-MM-DD' — the format the API accepts for date filters. */
+export function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 /** True when a follow-up date is today or in the past. */
 export function isOverdue(date: string | null | undefined): boolean {
   if (!date) return false;
-  const today = new Date().toISOString().slice(0, 10);
-  return date <= today;
+  return date <= todayIso();
 }
 
 /** Indian-format currency from the API's decimal string. */
