@@ -196,6 +196,7 @@ and the sequence stays globally unique.
 | `GET` | `/api/challans` | All | List with search, status and date filters |
 | `POST` | `/api/challans` | Admin, Sales | Create draft, or create + confirm |
 | `GET` | `/api/challans/:id` | All | Header + line items |
+| `GET` | `/api/challans/:id/pdf` | All | Download the challan as a PDF |
 | `PUT` | `/api/challans/:id` | Admin, Sales | Replace a **draft's** customer / items / notes |
 | `POST` | `/api/challans/:id/confirm` | Admin, Sales, **Warehouse** | ⚡ Transactional stock deduction |
 | `POST` | `/api/challans/:id/cancel` | Admin, Sales | Cancel a draft |
@@ -219,6 +220,30 @@ POST /api/challans
 `confirmImmediately: true` runs creation **and** confirmation in one transaction — the "Save &
 confirm" button. On insufficient stock **nothing is written at all**, not even the draft. Verified:
 the challan count was identical before and after a failed immediate-confirm.
+
+### PDF export
+
+`GET /api/challans/:id/pdf` returns the challan as a printable document — header, customer block,
+the line items with their snapshot values, totals, notes and the audit trail — with
+`Content-Disposition: attachment` so a browser saves it as `CH-YYYY-NNNNNN.pdf`.
+
+Three decisions worth recording:
+
+**Rendered server-side.** The document is then identical for everyone, and its definition sits
+beside the data that produces it rather than in the client. It uses PDFKit, not headless Chrome: a
+browser engine would not fit the free tier the API is deployed on.
+
+**Drafts and cancelled challans render too, and say what they are.** Each carries a banner — a draft
+states that no goods have been dispatched and no stock deducted. A PDF outlives the screen it came
+from, and a printed draft that is indistinguishable from a dispatch note is a worse failure than
+refusing the download would have been.
+
+**Built in memory, then sent.** Streaming would commit the `200` before the document was finished,
+so a mid-render failure would arrive as a truncated, unopenable file. Buffering keeps a render error
+an honest `500`.
+
+Amounts are labelled `INR` rather than carrying `₹`: PDFKit's built-in fonts use WinAnsi encoding,
+which has no rupee glyph, and a missing glyph fails silently in the output.
 
 ### Filters on `GET /api/challans`
 

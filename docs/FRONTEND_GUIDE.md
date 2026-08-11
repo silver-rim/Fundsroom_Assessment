@@ -17,7 +17,7 @@
 | Frontend | The top bar names the current screen instead of repeating the product name |
 | Frontend | A "Follow-ups due" filter on the customer list, which the dashboard tile links into |
 
-With this the API surface is complete: **all 26 planned endpoints implemented** (29 routes in total
+With this the API surface is complete: **all 26 planned endpoints implemented** (30 routes in total
 once the three added along the way are counted — see
 [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) §11).
 

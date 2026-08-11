@@ -581,3 +581,67 @@ describe('concurrency — confirming one challan twice at once', () => {
     assert.equal(Number(sum.rows[0]!.total), 10, 'ledger must reconcile after the race');
   });
 });
+
+describe('GET /api/challans/:id/pdf', () => {
+  it('returns a PDF named after the challan', async () => {
+    const draft = await createDraft([{ productId: suite.fixtures.products.plenty, quantity: 2 }]);
+
+    const response = await get(`/api/challans/${draft.id}/pdf`, suite.tokens.sales);
+
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type') ?? '', /application\/pdf/);
+    assert.equal(
+      response.headers.get('content-disposition'),
+      `attachment; filename="${draft.challanNumber}.pdf"`,
+    );
+
+    // The harness hands back a non-JSON body as text. The header of a PDF is
+    // ASCII, so the magic bytes survive that and are enough to prove this is a
+    // real document rather than an error page served with the wrong type.
+    assert.ok(
+      typeof response.body === 'string' && response.body.startsWith('%PDF-'),
+      'body must begin with the PDF magic number',
+    );
+  });
+
+  it('renders a confirmed challan too', async () => {
+    const draft = await createDraft([{ productId: suite.fixtures.products.plenty, quantity: 3 }]);
+    await post(`/api/challans/${draft.id}/confirm`, undefined, suite.tokens.warehouse);
+
+    const response = await get(`/api/challans/${draft.id}/pdf`, suite.tokens.accounts);
+
+    assert.equal(response.status, 200);
+    assert.ok(typeof response.body === 'string' && response.body.startsWith('%PDF-'));
+  });
+
+  /**
+   * The document is readable by every role, matching GET /api/challans/:id.
+   * Restricting it further would guard the format rather than the data, since
+   * the PDF contains nothing the detail endpoint does not already return.
+   */
+  it('is readable by every authenticated role', async () => {
+    const draft = await createDraft([{ productId: suite.fixtures.products.plenty, quantity: 1 }]);
+
+    for (const token of Object.values(suite.tokens)) {
+      const response = await get(`/api/challans/${draft.id}/pdf`, token);
+      assert.equal(response.status, 200);
+    }
+  });
+
+  it('rejects an anonymous request', async () => {
+    const draft = await createDraft([{ productId: suite.fixtures.products.plenty, quantity: 1 }]);
+
+    const response = await get(`/api/challans/${draft.id}/pdf`);
+
+    assert.equal(response.status, 401);
+  });
+
+  /** A missing challan is still the JSON error envelope, not a broken download. */
+  it('404s with a JSON envelope for an unknown challan', async () => {
+    const response = await get('/api/challans/999999/pdf', suite.tokens.admin);
+
+    assert.equal(response.status, 404);
+    assert.match(response.headers.get('content-type') ?? '', /application\/json/);
+    assert.equal(response.body.success, false);
+  });
+});

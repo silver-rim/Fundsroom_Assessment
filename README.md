@@ -3,13 +3,12 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-Built as Full Stack System. **Complete** — all four modules, 29 API routes,
-249 automated tests passing, and a Postman collection with 144 assertions over the live API.
+Built as Full Stack System. **Complete** — all four modules, 30 API routes,
+254 automated tests passing, and a Postman collection with 144 assertions over the live API.
 
 > **Reviewing this?** [SUBMISSION.md](SUBMISSION.md) maps every case-study requirement to the code
 > that satisfies it, and has a ten-minute evaluation path. This README is for running it.
 
-**LINK**: <https://fundsroom-assessment.vercel.app/login>
 ---
 
 ## Live demo
@@ -336,7 +335,7 @@ retyping credentials.
 | `npm run dev` | Start with hot reload (tsx watch) |
 | `npm run build` | Compile TypeScript to `dist/` and copy the `.sql` migrations across |
 | `npm start` | Run the compiled build (production) |
-| `npm test` | Run the 231 integration tests against an isolated `<database>_test` database |
+| `npm test` | Run the 236 integration tests against an isolated `<database>_test` database |
 | `npm run typecheck` | Type-check without emitting |
 | `npm run migrate` | Apply pending migrations |
 | `npm run seed` | Insert development seed data |
@@ -423,7 +422,7 @@ Full walkthrough, per-platform variable tables, verification commands and a trou
 | [docs/SALES_CHALLAN_MODULE.md](docs/SALES_CHALLAN_MODULE.md) | Challan lifecycle, draft vs confirmed, the two-pass transactional stock deduction, **product snapshot**, challan numbering, 41 test results plus a concurrency proof |
 | [docs/FRONTEND_GUIDE.md](docs/FRONTEND_GUIDE.md) | The dashboard (what every counter means and why), frontend architecture, the four-states and URL-as-filter-state conventions, navigation, accessibility, 17 test results |
 | [docs/TESTING.md](docs/TESTING.md) | How to run the suite, why it is integration-first, coverage by area, the concurrency and snapshot proofs, **the five defects found and fixed**, and what is deliberately not covered |
-| [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | The implemented API reference: all 29 routes, every request and response captured from the running API, the full error catalogue, the permission matrix, and an honest diff against the Phase 0 plan |
+| [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | The implemented API reference: all 30 routes, every request and response captured from the running API, the full error catalogue, the permission matrix, and an honest diff against the Phase 0 plan |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Putting it online on free tiers: Neon → Render → Vercel in order, why that split, every environment variable per platform, how to verify the deployment end to end, and a troubleshooting table for the failures that actually happen |
 | [docs/DOCKER.md](docs/DOCKER.md) | Running the whole stack in containers: what each image contains, start-up ordering, port overrides, and the build-time-vs-runtime trap with the API URL |
 | [postman/README.md](postman/README.md) | The collection folder by folder, how to re-run it, and how it is regenerated |

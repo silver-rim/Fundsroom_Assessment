@@ -177,7 +177,7 @@ once instead of fixing them one request at a time.
 
 ## 5. Endpoint index
 
-29 routes. The Roles column lists who may call it; ADMIN is included everywhere.
+30 routes. The Roles column lists who may call it; ADMIN is included everywhere.
 
 | # | Method | Path | Auth | Roles |
 | --- | --- | --- | --- | --- |
@@ -206,13 +206,35 @@ once instead of fixing them one request at a time.
 | 23 | `GET` | `/api/challans` | Yes | All |
 | 24 | `POST` | `/api/challans` | Yes | ADMIN, SALES |
 | 25 | `GET` | `/api/challans/:id` | Yes | All |
-| 26 | `PUT` | `/api/challans/:id` | Yes | ADMIN, SALES |
-| 27 | `POST` | `/api/challans/:id/confirm` | Yes | ADMIN, SALES, WAREHOUSE |
-| 28 | `POST` | `/api/challans/:id/cancel` | Yes | ADMIN, SALES |
-| 29 | `GET` | `/api/dashboard/summary` | Yes | All |
+| 26 | `GET` | `/api/challans/:id/pdf` | Yes | All |
+| 27 | `PUT` | `/api/challans/:id` | Yes | ADMIN, SALES |
+| 28 | `POST` | `/api/challans/:id/confirm` | Yes | ADMIN, SALES, WAREHOUSE |
+| 29 | `POST` | `/api/challans/:id/cancel` | Yes | ADMIN, SALES |
+| 30 | `GET` | `/api/dashboard/summary` | Yes | All |
 
 `/api/products/categories` is declared before `/api/products/:id` so the literal path is not captured
-as an id.
+as an id. `/api/challans/:id/pdf` is declared before `PUT /api/challans/:id` for readability only —
+the methods differ, so no shadowing is possible either way.
+
+### `GET /api/challans/:id/pdf`
+
+The one endpoint that does not return the JSON envelope: the body **is** the document.
+
+```text
+200 OK
+Content-Type: application/pdf
+Content-Disposition: attachment; filename="CH-2026-000012.pdf"
+```
+
+Errors still use the envelope. The challan is loaded before a single byte is written, so an unknown
+id is the same `404 NOT_FOUND` JSON as everywhere else rather than a truncated download.
+
+Any role that may read a challan may download it — the PDF contains nothing `GET /api/challans/:id`
+does not already return, so a narrower rule would guard the format rather than the data.
+
+Drafts and cancelled challans render too, and each carries a banner saying so. A PDF outlives the
+screen it was downloaded from, and a printed draft that looks like a dispatch note is a worse
+outcome than refusing the download would be.
 
 ---
 

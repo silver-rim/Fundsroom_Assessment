@@ -43,6 +43,18 @@ router.get(
   asyncHandler(challanController.getChallan),
 );
 
+/**
+ * Anyone who may read a challan may download it: the PDF contains nothing the
+ * detail endpoint does not already return, so a narrower rule here would guard
+ * the format rather than the data.
+ */
+router.get(
+  '/:id/pdf',
+  authorize(CHALLAN_READ),
+  validate({ params: idParamSchema }),
+  asyncHandler(challanController.downloadChallanPdf),
+);
+
 router.put(
   '/:id',
   authorize(CHALLAN_WRITE),

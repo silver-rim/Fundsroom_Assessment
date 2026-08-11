@@ -108,7 +108,7 @@ the same story in eight requests, with assertions.
 | --- | --- |
 | GitHub repository | ✅ Committed in ten reviewable phases |
 | README with setup instructions | ✅ [README.md](README.md) — clone to running app in five steps |
-| API documentation | ✅ [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) — all 29 routes, every example captured from the running API |
+| API documentation | ✅ [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) — all 30 routes, every example captured from the running API |
 | Postman collection | ✅ [postman/](postman/) — 56 requests, 144 assertions, passing |
 | Deployment | ✅ Configured and documented; running it needs the submitter's accounts |
 | Test credentials for all roles | ✅ §1 above |
@@ -174,7 +174,7 @@ Stated plainly rather than left for you to discover:
 - **No refresh tokens.** A JWT is valid for its full 8 hours, so deactivating a user takes effect at
   their next login. This is the documented cost of a stateless API, and the first thing I would
   revisit.
-- **No browser-level end-to-end tests.** The 249 automated tests cover the API exhaustively and the
+- **No browser-level end-to-end tests.** The 254 automated tests cover the API exhaustively and the
   frontend's pure logic; the React components themselves were verified by hand and through the
   Postman workflow. A Playwright suite is the honest next step, and it is called out in
   [TESTING.md](docs/TESTING.md) §6 rather than glossed over.
@@ -192,7 +192,7 @@ Stated plainly rather than left for you to discover:
 | Database tables | 7 (+ a migrations bookkeeping table) |
 | Frontend screens | 16 page components across 10 areas |
 | TypeScript | ~13,900 lines across backend and frontend |
-| Automated tests | **249** — 231 backend integration tests against a real PostgreSQL database, 18 frontend unit tests |
+| Automated tests | **254** — 236 backend integration tests against a real PostgreSQL database, 18 frontend unit tests |
 | Postman | 56 requests, **144 assertions** |
 | Documentation | 12 documents, ~5,100 lines |
 | Defects found and fixed by the test phase | 5, each written up in [TESTING.md](docs/TESTING.md) §4 |

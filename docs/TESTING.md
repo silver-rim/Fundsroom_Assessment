@@ -1,6 +1,6 @@
 # Testing
 
-> Phase 7 deliverable. 249 automated tests — 231 backend integration tests against a real
+> Phase 7 deliverable. 254 automated tests — 236 backend integration tests against a real
 > PostgreSQL database, 18 frontend unit tests — plus the five defects the exercise found and the
 > fixes for them. Phase 8 added a third, complementary suite: 144 Postman assertions run against the
 > live API with newman (§1).
@@ -11,7 +11,7 @@
 ## 1. Running the tests
 
 ```bash
-cd backend  && npm test     # 231 integration tests
+cd backend  && npm test     # 236 integration tests
 cd frontend && npm test     #  18 unit tests
 ```
 

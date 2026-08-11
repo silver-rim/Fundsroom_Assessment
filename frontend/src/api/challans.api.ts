@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { ApiError, apiClient } from './client';
 import type { ApiSuccess, PaginationMeta } from '../types/api';
 import type { Challan, ChallanListParams, ChallanPayload, ChallanSummary } from '../types/challan';
 import type { Paginated } from './customers.api';
@@ -54,6 +54,54 @@ export async function cancelChallan(id: number, reason?: string): Promise<Challa
     ...(reason ? { reason } : {}),
   });
   return response.data.data;
+}
+
+/**
+ * GET /api/challans/:id/pdf — downloads the challan as a PDF.
+ *
+ * Fetched rather than linked. The endpoint is authenticated and the token lives
+ * in localStorage, so an `<a href>` would arrive without one and be rejected;
+ * the bytes have to come back through the client that attaches the header.
+ *
+ * The response is a Blob, which the shared error interceptor cannot read a JSON
+ * envelope out of — so a failure arrives with the right status but a generic
+ * message. Restoring a useful one is this function's job.
+ */
+export async function downloadChallanPdf(id: number, challanNumber: string): Promise<void> {
+  let blob: Blob;
+
+  try {
+    const response = await apiClient.get<Blob>(`/challans/${id}/pdf`, { responseType: 'blob' });
+    blob = response.data;
+  } catch (caught) {
+    if (caught instanceof ApiError && caught.code === 'UNKNOWN_ERROR' && caught.status > 0) {
+      throw new ApiError(
+        caught.status === 404
+          ? 'That challan no longer exists.'
+          : caught.status === 403
+            ? 'You do not have permission to download this challan.'
+            : 'The PDF could not be generated. Please try again.',
+        caught.status,
+        caught.code,
+      );
+    }
+    throw caught;
+  }
+
+  const objectUrl = URL.createObjectURL(blob);
+
+  try {
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = `${challanNumber}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    // Not revoked synchronously: some browsers cancel a download whose object
+    // URL disappears in the same tick as the click that started it.
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+  }
 }
 
 /** GET /api/customers/:id/challans */

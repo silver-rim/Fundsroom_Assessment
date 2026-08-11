@@ -8,7 +8,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ApiError } from '../../api/client';
-import { cancelChallan, confirmChallan, getChallan } from '../../api/challans.api';
+import {
+  cancelChallan,
+  confirmChallan,
+  downloadChallanPdf,
+  getChallan,
+} from '../../api/challans.api';
 import { useAuth } from '../../context/AuthContext';
 import { Button, LinkButton } from '../../components/ui/Button';
 import { ErrorState, InlineSpinner, SuccessBanner } from '../../components/ui/States';
@@ -36,6 +41,9 @@ export default function ChallanDetailPage(): JSX.Element {
   const [error, setError] = useState<ApiError | null>(null);
   const [actionError, setActionError] = useState<ApiError | null>(null);
   const [isWorking, setIsWorking] = useState(false);
+  // Tracked separately from isWorking so downloading a PDF does not disable
+  // Confirm and Cancel — it changes nothing and can safely run alongside them.
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [flash, setFlash] = useState<string | null>(
     (location.state as { flash?: string } | null)?.flash ?? null,
@@ -90,6 +98,23 @@ export default function ChallanDetailPage(): JSX.Element {
     }
   }
 
+  async function handleDownloadPdf(): Promise<void> {
+    if (!challan) return;
+
+    setActionError(null);
+    setIsDownloading(true);
+
+    try {
+      await downloadChallanPdf(challan.id, challan.challanNumber);
+    } catch (caught) {
+      setActionError(
+        caught instanceof ApiError ? caught : new ApiError('Download failed', 0, 'UNKNOWN'),
+      );
+    } finally {
+      setIsDownloading(false);
+    }
+  }
+
   async function handleCancel(): Promise<void> {
     const reason = window.prompt('Why is this challan being cancelled? (optional)');
     if (reason === null) return;
@@ -138,6 +163,16 @@ export default function ChallanDetailPage(): JSX.Element {
           <LinkButton to="/challans" variant="secondary">
             Back to list
           </LinkButton>
+          {/* Offered for every status, including drafts. The PDF labels a draft
+              as one, so downloading it cannot be mistaken for a dispatch note. */}
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleDownloadPdf}
+            disabled={isDownloading}
+          >
+            {isDownloading ? 'Preparing…' : 'Download PDF'}
+          </Button>
           {isDraft && canEdit && (
             <LinkButton to={`/challans/${challan.id}/edit`} variant="secondary">
               Edit draft
