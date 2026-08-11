@@ -217,6 +217,20 @@ jobs:
         if: ${{ env.VERCEL_TOKEN != '' }}
         run: npm install --global vercel@latest
 
+      # Writing the link file rather than trusting VERCEL_ORG_ID /
+      # VERCEL_PROJECT_ID to be picked up. Those env vars are the documented way
+      # to link a CI checkout, but CLI 58 ignores them here and fails with
+      # "Could not retrieve Project Settings" - which reads like a permissions
+      # error and is really an unlinked checkout. This is the same file
+      # `vercel link` writes locally, and it is exactly what the error asks for.
+      - name: Link project
+        if: ${{ env.VERCEL_TOKEN != '' }}
+        run: |
+          mkdir -p .vercel
+          printf '{"projectId":"%s","orgId":"%s"}\n' \
+            "$VERCEL_PROJECT_ID" "$VERCEL_ORG_ID" > .vercel/project.json
+          echo "Linked: $(wc -c < .vercel/project.json) bytes written"
+
       # `vercel pull` fetches the project settings - including Root Directory
       # (frontend) and VITE_API_BASE_URL. That matters: VITE_* variables are
       # compiled into the bundle at build time, so the build must happen with
