@@ -91,6 +91,7 @@ mini-erp-crm/
 │   │   ├── app.ts                   express assembly
 │   │   └── server.ts                entry point, graceful shutdown
 │   ├── .env.example
+│   ├── Dockerfile                   multi-stage; runtime image has no compiler or tests
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── tsconfig.build.json          production build — excludes the test suite from dist/
@@ -110,7 +111,9 @@ mini-erp-crm/
 │   │   ├── App.tsx                  route table
 │   │   └── main.tsx
 │   ├── .env.example
+│   ├── Dockerfile                   builds the SPA, then serves it with nginx
 │   ├── index.html
+│   ├── nginx.conf                   SPA fallback + caching, mirroring vercel.json
 │   ├── package.json
 │   ├── vercel.json                  SPA rewrite + asset caching for Vercel
 │   └── vite.config.ts
@@ -120,11 +123,29 @@ mini-erp-crm/
 │   ├── Mini-ERP-CRM.postman_environment.json
 │   ├── build-collection.mjs         generates both files — the JSON is not hand-edited
 │   └── README.md
+├── docker-compose.yml               the whole stack locally: postgres + api + web
 ├── render.yaml                      Render Blueprint for the backend service
 ├── .env.example                     system-wide variable reference
 ├── .gitignore
 └── README.md
 ```
+
+---
+
+## Quick start with Docker
+
+Nothing installed but Docker? The whole stack — database, API and web app — comes up with one
+command, migrated and seeded:
+
+```bash
+docker compose up --build
+```
+
+App on <http://localhost:8080>, API on <http://localhost:4000/api/health>. Sign in with
+`admin@fundsroom.local` / `Admin@12345`.
+
+Details, port overrides and troubleshooting: [docs/DOCKER.md](docs/DOCKER.md). To develop with hot
+reload, use the local setup below instead.
 
 ---
 
@@ -351,6 +372,7 @@ Full walkthrough, per-platform variable tables, verification commands and a trou
 | [docs/TESTING.md](docs/TESTING.md) | How to run the suite, why it is integration-first, coverage by area, the concurrency and snapshot proofs, **the five defects found and fixed**, and what is deliberately not covered |
 | [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | The implemented API reference: all 29 routes, every request and response captured from the running API, the full error catalogue, the permission matrix, and an honest diff against the Phase 0 plan |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Putting it online on free tiers: Neon → Render → Vercel in order, why that split, every environment variable per platform, how to verify the deployment end to end, and a troubleshooting table for the failures that actually happen |
+| [docs/DOCKER.md](docs/DOCKER.md) | Running the whole stack in containers: what each image contains, start-up ordering, port overrides, and the build-time-vs-runtime trap with the API URL |
 | [postman/README.md](postman/README.md) | The collection folder by folder, how to re-run it, and how it is regenerated |
 | [SUBMISSION.md](SUBMISSION.md) | **For reviewers** — requirement-to-code map, a ten-minute evaluation path, the decisions taken and what is deliberately absent |
 

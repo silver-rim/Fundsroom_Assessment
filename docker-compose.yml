@@ -1,0 +1,101 @@
+# =============================================================================
+# Mini ERP + CRM — the whole stack, locally, with one command.
+#
+#     docker compose up --build
+#
+#     App   http://localhost:8080
+#     API   http://localhost:4000/api/health
+#
+# Sign in with admin@fundsroom.local / Admin@12345 (see README).
+#
+# This is a LOCAL DEMO stack, not a production deployment — production is
+# Neon + Render + Vercel, described in docs/DEPLOYMENT.md. The images
+# themselves are production artifacts; this file configures them for a laptop.
+# =============================================================================
+
+name: mini-erp-crm
+
+services:
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-mini_erp_crm}
+    ports:
+      # 5433 on the host, deliberately: 5432 is usually taken by a local
+      # PostgreSQL install, and a port clash here looks like a broken container.
+      # Connect a GUI client to localhost:5433.
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # The API refuses to start without a reachable database, so it must not
+      # start until this passes. `pg_isready` alone can succeed while the
+      # server is still initialising, hence the explicit database name.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-mini_erp_crm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Overrides the image default of production. This stack is a development
+      # environment and says so: error responses carry a stack trace, and the
+      # seed runs without needing the ALLOW_PRODUCTION_SEED safety catch.
+      NODE_ENV: development
+      # Quoted throughout: an unquoted YAML scalar like `false` becomes a
+      # boolean, and the backend's env schema expects the strings "true"/"false".
+      PORT: "4000"
+      # `postgres` is the service name — containers resolve each other by it on
+      # the compose network. Not localhost: that would be the API's own container.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-mini_erp_crm}
+      DATABASE_SSL: "false"
+      DATABASE_POOL_MAX: "10"
+      # Local-only value. Production generates its own — see render.yaml.
+      JWT_SECRET: ${JWT_SECRET:-local-docker-development-secret-not-for-production-use}
+      JWT_EXPIRES_IN: 8h
+      BCRYPT_SALT_ROUNDS: "10"
+      # Must name the origin the BROWSER uses — the web container's published
+      # port, not its internal one.
+      CORS_ORIGINS: http://localhost:${WEB_PORT:-8080}
+      LOG_LEVEL: info
+    ports:
+      - "${API_PORT:-4000}:4000"
+    # Migrations then seed then serve, mirroring Render's start command. Both
+    # steps are idempotent, so a restart re-runs them as no-ops. If a migration
+    # fails the container exits instead of serving against an old schema.
+    command: sh -c "npm run migrate:prod && npm run seed:prod && node dist/server.js"
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: ./frontend
+      args:
+        # Resolved by the browser, so it must be the HOST address of the API,
+        # never http://api:4000. This is baked into the bundle at build time —
+        # change it and you must rebuild, not just restart.
+        VITE_API_BASE_URL: http://localhost:${API_PORT:-4000}/api
+        VITE_APP_NAME: Mini ERP + CRM
+    depends_on:
+      # Only for start ordering. The SPA is static files; it loads fine before
+      # the API is ready and shows its own error state until it is.
+      - api
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    restart: unless-stopped
+
+volumes:
+  # Named volume, so `docker compose down` keeps your data.
+  # `docker compose down -v` throws it away and the next start re-seeds.
+  pgdata:

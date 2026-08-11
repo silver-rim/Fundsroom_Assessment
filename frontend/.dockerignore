@@ -1,0 +1,20 @@
+# Keeps the build context small and host artifacts out of the image.
+# node_modules is excluded so the container installs for its own platform.
+
+node_modules
+dist
+
+# A stale local .env would otherwise be copied in and baked into the bundle by
+# Vite, silently overriding the build argument.
+.env
+.env.*
+!.env.example
+
+.git
+.gitignore
+*.md
+coverage
+.vscode
+.idea
+Dockerfile
+.dockerignore
