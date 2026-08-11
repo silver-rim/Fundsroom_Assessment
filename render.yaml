@@ -19,7 +19,13 @@ services:
     region: singapore
     rootDir: backend
     # `npm ci` (not `install`) so the deployed tree matches package-lock.json exactly.
-    buildCommand: npm ci && npm run build
+    #
+    # --include=dev is REQUIRED and not optional: NODE_ENV=production is set below,
+    # and npm honours it by omitting devDependencies — which is where typescript
+    # and @types/node live. Without this the build fails with
+    # "Cannot find type definition file for 'node'". The compiler is a build-time
+    # tool only; the runtime still starts from dist/ with production deps.
+    buildCommand: npm ci --include=dev && npm run build
     # Migrations run on start, not at build time: the build environment is not
     # guaranteed to reach the database, and a migration that fails here fails the
     # deploy loudly instead of leaving a running server against an old schema.
@@ -36,6 +42,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+
+      # package.json says `engines: >=20`, and Render reads that as "newest
+      # Node that satisfies it" — which drifts upward on its own schedule and
+      # built against Node 26 while everything here was developed and tested on
+      # 20. Pin it, so a deploy months from now compiles what was tested.
+      - key: NODE_VERSION
+        value: "20"
 
       # Render injects its own PORT; server.ts already reads it.
 
