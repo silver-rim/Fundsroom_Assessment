@@ -149,9 +149,23 @@ jobs:
       # a secret URL, so it lives in repository secrets, never in this file.
       # Turn Render's own "Auto-Deploy" OFF, or the service deploys twice and
       # the ungated one wins the race.
+      # Checked before curl runs, because curl's own complaint about a bad value
+      # is "URL rejected: Malformed input to a URL function", which says nothing
+      # about the cause. GitHub masks the value in logs, so a bad secret is
+      # otherwise invisible - the shape check is the only feedback available.
       - name: Trigger Render deploy
         if: ${{ env.DEPLOY_HOOK != '' }}
-        run: curl --fail --silent --show-error -X POST "$DEPLOY_HOOK"
+        run: |
+          case "$DEPLOY_HOOK" in
+            https://api.render.com/deploy/*) ;;
+            *)
+              echo "::error::RENDER_DEPLOY_HOOK_URL is set but is not a Render deploy hook."
+              echo "::error::The secret value must be ONLY the URL, starting https://api.render.com/deploy/"
+              echo "::error::Common cause: the secret was pasted as 'RENDER_DEPLOY_HOOK_URL = https://...' instead of just the URL."
+              exit 1
+              ;;
+          esac
+          curl --fail --silent --show-error -X POST "$DEPLOY_HOOK"
 
       - name: Skip notice
         if: ${{ env.DEPLOY_HOOK == '' }}
@@ -177,6 +191,27 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.FRONTEND_NODE_VERSION }}
+
+      # Same reasoning as the Render check. `vercel pull` reports a stray prefix
+      # or newline as "Could not retrieve Project Settings", which reads like a
+      # linking problem rather than a malformed secret.
+      - name: Check secret shape
+        if: ${{ env.VERCEL_TOKEN != '' }}
+        run: |
+          fail=0
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            eval "value=\$$name"
+            if [ -z "$value" ]; then
+              echo "::error::$name is empty. Add it in Settings -> Secrets and variables -> Actions."
+              fail=1
+            elif [ "$(printf '%s' "$value" | wc -l)" -ne 0 ] \
+              || case "$value" in *' '*|*'='*) true ;; *) false ;; esac; then
+              echo "::error::$name contains a space, '=' or newline, so it is not a bare value."
+              echo "::error::Paste ONLY the value - not '$name = ...' and not quoted."
+              fail=1
+            fi
+          done
+          [ "$fail" -eq 0 ] || exit 1
 
       - name: Install Vercel CLI
         if: ${{ env.VERCEL_TOKEN != '' }}
