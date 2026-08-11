@@ -1,0 +1,75 @@
+# Render Blueprint for the backend API.
+#
+# Render reads this file when you create a Blueprint from the repository, so the
+# service is defined in version control rather than clicked together in a
+# dashboard nobody can review. See docs/DEPLOYMENT.md.
+#
+# The database is NOT declared here: this project uses Neon's free tier, which
+# outlives Render's 30-day free-database expiry. DATABASE_URL is supplied as a
+# secret instead.
+
+services:
+  - type: web
+    name: mini-erp-crm-api
+    runtime: node
+    plan: free
+    # Change to the region nearest your users: oregon | frankfurt | singapore | ohio | virginia.
+    # Keep it in the same region as the Neon project — a cross-region query pays
+    # the round trip on every single call.
+    region: singapore
+    rootDir: backend
+    # `npm ci` (not `install`) so the deployed tree matches package-lock.json exactly.
+    buildCommand: npm ci && npm run build
+    # Migrations run on start, not at build time: the build environment is not
+    # guaranteed to reach the database, and a migration that fails here fails the
+    # deploy loudly instead of leaving a running server against an old schema.
+    # The runner is idempotent, so a restart re-runs it as a no-op.
+    startCommand: npm run migrate:prod && npm start
+    # Render polls this and will not route traffic to an instance that fails it.
+    # The endpoint reports the DATABASE too, so a deploy with a bad DATABASE_URL
+    # never goes live.
+    healthCheckPath: /api/health
+    # Auto-deploy on push to the connected branch is Render's default; it is left
+    # implicit rather than pinned here, because the field name for it has changed
+    # across Blueprint spec versions and an unrecognised key fails validation.
+    # Turn it off in the dashboard if you would rather deploy manually.
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Render injects its own PORT; server.ts already reads it.
+
+      # ---- Secrets: set these in the Render dashboard, never in this file ----
+      # Neon connection string, including ?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+
+      # Set AFTER the Vercel deployment exists, to that exact origin.
+      # Comma-separated, no trailing slash. A mismatch here is the single most
+      # common cause of "it works in Postman but not in the browser".
+      - key: CORS_ORIGINS
+        sync: false
+
+      # ---- Generated once by Render, never seen by anyone ----
+      # Regenerating it invalidates every issued token — users simply log in again.
+      - key: JWT_SECRET
+        generateValue: true
+
+      # ---- Tuned for the free tier ----
+      - key: DATABASE_SSL
+        value: "true"
+      # Neon's free tier allows a limited number of connections and Render's free
+      # instance is single-process, so a small pool is both sufficient and safer.
+      - key: DATABASE_POOL_MAX
+        value: "5"
+      - key: JWT_EXPIRES_IN
+        value: 8h
+      - key: BCRYPT_SALT_ROUNDS
+        value: "10"
+      - key: LOG_LEVEL
+        value: info
+
+      # Seeding a production database is an explicit, deliberate act.
+      # Leave this false; see docs/DEPLOYMENT.md section 6 for the demo-data step.
+      - key: ALLOW_PRODUCTION_SEED
+        value: "false"

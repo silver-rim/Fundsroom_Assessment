@@ -206,9 +206,9 @@ These are decisions the case study leaves open. They are implemented as stated a
 - [x] Responsive admin-style React UI with loading / empty / error / success states
 - [x] Consistent REST envelope, correct HTTP status codes, no stack traces leaked to clients
 - [x] Migrations + seed data + `.env.example`
-- [ ] Full documentation set, Postman collection, deployment, test credentials for all four roles
-      — test credentials, the module docs, `API_DOCUMENTATION.md` and the Postman collection exist;
-      deployment (Phase 9) remains
+- [x] Full documentation set, Postman collection, deployment, test credentials for all four roles
+      — the deployment path is `render.yaml`, `frontend/vercel.json` and `docs/DEPLOYMENT.md`, with
+      both production builds verified locally; running the deploy needs the reviewer's own accounts
 
 **Explicitly out of scope for the MVP:** purchase orders, invoices & tax computation, payments /
 outstanding balances, returns & credit notes, per-location stock, product images, reports &

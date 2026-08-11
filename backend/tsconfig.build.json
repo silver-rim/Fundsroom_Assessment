@@ -1,0 +1,17 @@
+{
+  /*
+   * Production build config.
+   *
+   * Identical to tsconfig.json except that the test suite is excluded from the
+   * emitted output. Without this, `npm run build` compiled src/tests into
+   * dist/tests and shipped it to the server — including the fixture helper
+   * whose resetDatabase() truncates every table. Nothing at runtime imports it,
+   * but a TRUNCATE helper has no business sitting inside a production artifact,
+   * and the deployed bundle should contain only what serves traffic.
+   *
+   * Type checking still covers the tests: `npm run typecheck` uses the base
+   * tsconfig.json, which includes them.
+   */
+  "extends": "./tsconfig.json",
+  "exclude": ["node_modules", "dist", "src/tests"]
+}

@@ -3,8 +3,8 @@
 An internal operations portal for a wholesale / distribution company: customer CRM, product master,
 inventory with a full stock-movement ledger, and sales challans with transactional stock deduction.
 
-> **Status: Phase 8 — feature-complete, tested and documented. 249 automated tests passing, plus a
-> 56-request Postman collection covering every endpoint.**
+> **Status: Phase 9 — feature-complete, tested, documented and deployable. 249 automated tests
+> passing, plus a 56-request Postman collection covering every endpoint.**
 > Working today: JWT login with four roles and role-based authorization, the customer CRM
 > (search, filters, pagination, follow-up notes), the product/inventory module with an append-only
 > stock ledger and low-stock alerting, sales challans with Draft/Confirmed/Cancelled lifecycle,
@@ -15,7 +15,9 @@ inventory with a full stock-movement ledger, and sales challans with transaction
 > Phase 8 published [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) — every example captured
 > from the running API rather than transcribed from the plan — and a Postman collection whose 144
 > assertions pass with newman.
-> Remaining: deployment (Phase 9), final submission README (10).
+> Phase 9 added the deployment path: `render.yaml`, `frontend/vercel.json` and
+> [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), with both production builds verified locally.
+> Remaining: the final submission README (Phase 10).
 
 ---
 
@@ -56,7 +58,8 @@ mini-erp-crm/
 │   │   └── server.ts                entry point, graceful shutdown
 │   ├── .env.example
 │   ├── package.json
-│   └── tsconfig.json
+│   ├── tsconfig.json
+│   └── tsconfig.build.json          production build — excludes the test suite from dist/
 ├── frontend/
 │   ├── src/
 │   │   ├── api/                     axios instance + one module per resource
@@ -75,6 +78,7 @@ mini-erp-crm/
 │   ├── .env.example
 │   ├── index.html
 │   ├── package.json
+│   ├── vercel.json                  SPA rewrite + asset caching for Vercel
 │   └── vite.config.ts
 ├── docs/
 ├── postman/
@@ -82,6 +86,7 @@ mini-erp-crm/
 │   ├── Mini-ERP-CRM.postman_environment.json
 │   ├── build-collection.mjs         generates both files — the JSON is not hand-edited
 │   └── README.md
+├── render.yaml                      Render Blueprint for the backend service
 ├── .env.example                     system-wide variable reference
 ├── .gitignore
 └── README.md
@@ -267,7 +272,32 @@ How they are managed:
   inlines `VITE_*` variables into the built bundle, so they are public by definition and never hold
   a secret.
 - **Production** — values are set in the hosting provider's dashboard (Render for the backend,
-  Vercel for the frontend), never in a file. Full detail lands in `docs/DEPLOYMENT.md` in Phase 9.
+  Vercel for the frontend), never in a file. Every variable is tabulated per platform in
+  [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) §8.
+
+---
+
+## Deployment
+
+Neon (PostgreSQL) → Render (API) → Vercel (SPA), all on free tiers, **in that order** — each step
+needs a value the previous one produces. The repository carries the configuration:
+
+| File | What it does |
+| --- | --- |
+| [render.yaml](render.yaml) | Render Blueprint: build and start commands, `/api/health` as the health check, and every environment variable, with secrets marked `sync: false` |
+| [frontend/vercel.json](frontend/vercel.json) | Rewrites every path to `index.html` — without it, refreshing `/customers/12` 404s, because the app uses `BrowserRouter` — plus immutable caching for hashed assets |
+| [backend/tsconfig.build.json](backend/tsconfig.build.json) | Keeps the test suite out of `dist/` |
+
+Migrations run from the start command, so a deploy applies its own schema changes; the API verifies
+the database is reachable before it listens, so a bad `DATABASE_URL` fails the deploy instead of
+serving 500s.
+
+Two things catch everyone, and both are covered in the guide: `VITE_API_BASE_URL` is **compiled into
+the bundle**, so changing it needs a rebuild rather than a restart; and `CORS_ORIGINS` on Render must
+name the Vercel origin exactly, or the browser is blocked while Postman keeps working.
+
+Full walkthrough, per-platform variable tables, verification commands and a troubleshooting table:
+**[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)**.
 
 ---
 
@@ -288,7 +318,7 @@ How they are managed:
 
 | [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) | The implemented API reference: all 29 routes, every request and response captured from the running API, the full error catalogue, the permission matrix, and an honest diff against the Phase 0 plan |
 
-Documents added in later phases: `DEPLOYMENT.md`.
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Putting it online on free tiers: Neon → Render → Vercel in order, why that split, every environment variable per platform, how to verify the deployment end to end, and a troubleshooting table for the failures that actually happen |
 
 ---
 
@@ -305,5 +335,5 @@ Documents added in later phases: `DEPLOYMENT.md`.
 | 6 | Dashboard and complete frontend UX | ✅ Complete |
 | 7 | Testing, validation and bug fixing | ✅ Complete |
 | 8 | API documentation and Postman collection | ✅ Complete |
-| 9 | Deployment | ⬜ |
+| 9 | Deployment | ✅ Complete |
 | 10 | Final documentation and submission preparation | ⬜ |

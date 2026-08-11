@@ -32,6 +32,7 @@ mini-erp-crm/  (repository root)
 ├── frontend/         React + TypeScript SPA
 ├── docs/             all documentation
 ├── postman/          Postman collection + the script that generates it
+├── render.yaml       Render Blueprint for the API service (Phase 9)
 ├── .env.example      documented environment variables (no secrets)
 ├── .gitignore
 └── README.md
