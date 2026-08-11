@@ -240,7 +240,7 @@ cd backend && npm run dev      # http://localhost:4000
 cd frontend && npm run dev     # http://localhost:5173
 ```
 
-Open <http://localhost:5173> — the Vite dev server. This is the local-development address only; the
+Open <http://localhost:8080> — the Vite dev server. This is the local-development address only; the
 Docker stack serves the same app on **8080** instead, because there the SPA is a built bundle behind
 nginx rather than a dev server. Running both at once is fine, and they are independent.
 
